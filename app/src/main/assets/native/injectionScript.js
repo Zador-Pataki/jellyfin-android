@@ -63,14 +63,127 @@
 })();
 
 (() => {
+    const movieCardSelector = '.card[data-id][data-type="Movie"][data-mediatype="Video"]';
+    const videoCardSelector = '.card[data-id][data-mediatype="Video"]';
+    const downloadButtonSelector = '.zadflix-card-download';
+    let reconciliationScheduled = false;
+
+    function movieName(card) {
+        return card.querySelector('.textActionButton')?.textContent?.trim()
+            || card.querySelector('.cardImageContainer')?.getAttribute('aria-label')
+            || 'movie';
+    }
+
+    function resetDownloadButton(button, card) {
+        const name = movieName(card);
+        button.dataset.itemId = card.dataset.id;
+        button.dataset.state = 'idle';
+        button.disabled = false;
+        button.title = `Download ${name}`;
+        button.setAttribute('aria-label', `Download ${name}`);
+        button.querySelector('.material-icons')?.classList.replace('download_done', 'download');
+    }
+
+    function reconcileMovieCards() {
+        reconciliationScheduled = false;
+
+        document.querySelectorAll(downloadButtonSelector).forEach(button => {
+            if (!button.closest(movieCardSelector)) button.remove();
+        });
+
+        document.querySelectorAll(movieCardSelector).forEach(card => {
+            const cardScalable = card.querySelector('.cardScalable');
+            if (!cardScalable) return;
+
+            let button = cardScalable.querySelector(downloadButtonSelector);
+            if (!button) {
+                button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'cardOverlayButton cardOverlayButton-br paper-icon-button-light zadflix-card-download';
+                button.innerHTML = '<span class="material-icons download" aria-hidden="true"></span>';
+                cardScalable.appendChild(button);
+            }
+
+            if (button.dataset.itemId !== card.dataset.id) {
+                resetDownloadButton(button, card);
+            }
+        });
+    }
+
+    function scheduleMovieCardReconciliation() {
+        if (reconciliationScheduled) return;
+        reconciliationScheduled = true;
+        window.requestAnimationFrame(reconcileMovieCards);
+    }
+
+    function showDownloadRequested(button, itemId) {
+        button.dataset.state = 'requested';
+        button.disabled = true;
+        button.title = 'Download requested';
+        button.setAttribute('aria-label', 'Download requested');
+        button.querySelector('.material-icons')?.classList.replace('download', 'download_done');
+
+        window.setTimeout(() => {
+            const card = button.closest(movieCardSelector);
+            if (card?.dataset.id === itemId) resetDownloadButton(button, card);
+        }, 2500);
+    }
+
     document.addEventListener('click', event => {
-        const card = event.target.closest?.('.card[data-id][data-mediatype="Video"]');
+        const downloadButton = event.target.closest?.(downloadButtonSelector);
+        if (downloadButton) {
+            const card = downloadButton.closest(movieCardSelector);
+            const itemId = card?.dataset.id;
+            if (!itemId) return;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            if (downloadButton.dataset.state === 'requested') return;
+
+            try {
+                const accepted = window.NativeInterface?.downloadFiles(JSON.stringify([{ itemId }]));
+                if (accepted !== true) throw new Error('The Android download request was rejected.');
+                showDownloadRequested(downloadButton, itemId);
+            } catch (error) {
+                console.error('Zadflix could not request this download.', error);
+                resetDownloadButton(downloadButton, card);
+            }
+            return;
+        }
+
+        const card = event.target.closest?.(videoCardSelector);
         const itemId = card?.dataset.id;
-        if (!itemId || !window.ZadflixOfflinePlayback?.handleItemClick(itemId)) return;
+        if (!itemId) return;
+
+        const action = event.target.closest?.('.itemAction[data-action], button[data-action]')?.dataset.action;
+        if (action && action !== 'link' && action !== 'play') return;
+
+        if (window.ZadflixOfflinePlayback?.handleItemClick(itemId)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+
+        if (!card.matches(movieCardSelector) || action === 'play') return;
+
+        const playButton = card.querySelector('.itemAction[data-action="play"]');
+        if (!playButton) return;
 
         event.preventDefault();
         event.stopImmediatePropagation();
+        playButton.click();
     }, true);
+
+    const observer = new MutationObserver(scheduleMovieCardReconciliation);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-id', 'data-mediatype', 'data-type'],
+        childList: true,
+        subtree: true,
+    });
+    window.addEventListener('hashchange', scheduleMovieCardReconciliation);
+    window.addEventListener('pageshow', scheduleMovieCardReconciliation);
+    scheduleMovieCardReconciliation();
 })();
 
 (() => {
@@ -245,80 +358,4 @@
     window.addEventListener('hashchange', ensureScanButton);
     window.setTimeout(ensureScanButton, 500);
     window.setInterval(ensureScanButton, 2000);
-})();
-
-(() => {
-    const detailPageSelector = '#itemDetailPage';
-    const minimalClass = 'zadflix-minimal-video-details';
-    const downloadClass = 'zadflix-download-action';
-    const minimalItemTypes = new Set(['Movie', 'Episode']);
-    let classificationVersion = 0;
-    let classifiedDetailPage;
-    let classifiedItemId;
-    let scheduled = false;
-
-    function getApiClient() {
-        return window.ServerConnections?.currentApiClient?.() ?? window.ApiClient;
-    }
-
-    function currentItemId() {
-        const queryIndex = window.location.hash.indexOf('?');
-        if (queryIndex === -1) return null;
-        return new URLSearchParams(window.location.hash.slice(queryIndex + 1)).get('id');
-    }
-
-    async function updateDetailLayout() {
-        scheduled = false;
-        const detailPage = document.querySelector(detailPageSelector);
-        const itemId = currentItemId();
-
-        if (detailPage === classifiedDetailPage && itemId === classifiedItemId) return;
-
-        const version = ++classificationVersion;
-        classifiedDetailPage?.classList.remove(minimalClass);
-        classifiedDetailPage?.querySelector('.btnDownload')?.classList.remove(downloadClass);
-        detailPage?.classList.remove(minimalClass);
-        detailPage?.querySelector('.btnDownload')?.classList.remove(downloadClass);
-        classifiedDetailPage = detailPage;
-        classifiedItemId = itemId;
-
-        const apiClient = getApiClient();
-        if (!detailPage || !itemId) return;
-        if (!apiClient?.getItem || !apiClient?.getCurrentUserId) {
-            classifiedDetailPage = undefined;
-            classifiedItemId = undefined;
-            return;
-        }
-
-        try {
-            const item = await apiClient.getItem(apiClient.getCurrentUserId(), itemId);
-            if (version !== classificationVersion || itemId !== currentItemId()) return;
-
-            const currentDetailPage = document.querySelector(detailPageSelector);
-            if (currentDetailPage && minimalItemTypes.has(item?.Type)) {
-                currentDetailPage.classList.add(minimalClass);
-                if (item?.Path) {
-                    currentDetailPage.querySelector('.btnDownload')?.classList.add(downloadClass);
-                }
-            }
-        } catch (error) {
-            console.debug('Zadflix could not simplify this media page.', error);
-            if (version === classificationVersion) {
-                classifiedDetailPage = undefined;
-                classifiedItemId = undefined;
-            }
-        }
-    }
-
-    function scheduleDetailLayoutUpdate() {
-        if (scheduled) return;
-        scheduled = true;
-        window.requestAnimationFrame(updateDetailLayout);
-    }
-
-    const observer = new MutationObserver(scheduleDetailLayoutUpdate);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    window.addEventListener('hashchange', scheduleDetailLayoutUpdate);
-    window.addEventListener('pageshow', scheduleDetailLayoutUpdate);
-    scheduleDetailLayoutUpdate();
 })();

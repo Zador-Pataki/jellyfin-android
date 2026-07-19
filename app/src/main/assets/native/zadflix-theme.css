@@ -166,53 +166,23 @@ a,
     border-left-color: #ff5252;
 }
 
-#itemDetailPage.zadflix-minimal-video-details .itemMiscInfo,
-#itemDetailPage.zadflix-minimal-video-details .detailPagePrimaryContent,
-#itemDetailPage.zadflix-minimal-video-details .detailPageSecondaryContainer,
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons > :not(.btnPlay):not(.btnReplay):not(.btnDownload) {
+.card[data-type='Movie'][data-mediatype='Video'] .cardOverlayButton.itemAction[data-action='play'] {
     display: none !important;
 }
 
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75em;
-}
-
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton {
-    background: #181818;
-    border: 0.08em solid rgb(255 255 255 / 25%);
-    border-radius: 0.35em;
+.zadflix-card-download {
+    background: rgb(0 0 0 / 78%) !important;
     color: #fff;
-    margin: 0;
-    min-height: 3em;
-    padding: 0.65em 1em;
-    width: auto;
+    z-index: 5;
 }
 
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .btnDownload.zadflix-download-action {
-    display: flex !important;
+.zadflix-card-download:focus,
+.zadflix-card-download:hover {
+    background: #e50914 !important;
 }
 
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:not(.hide)::after,
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .btnDownload.zadflix-download-action::after {
-    content: attr(title);
-    font-size: 0.95em;
-    font-weight: 600;
-    margin-left: 0.5em;
-}
-
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:focus,
-#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:hover {
-    background: #e50914;
-    border-color: #e50914;
-}
-
-.layout-mobile #itemDetailPage.zadflix-minimal-video-details .mainDetailButtons {
-    justify-content: center;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+.zadflix-card-download[data-state='requested'] {
+    background: #238636 !important;
 }
 
 @keyframes zadflix-library-scan-spin {

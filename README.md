@@ -24,6 +24,7 @@ This is not a hosted streaming service and it does not include media. It is a cu
 - Zadflix name, original red Z icon, splash screen, and red/black interface.
 - Automatic mobile-data playback policy: original quality on unmetered Wi-Fi and a 2.5 Mbps cap on metered/mobile connections by default.
 - A larger mobile playback buffer tuned for cellular connections through Tailscale.
+- A minimal movie-card flow: tap a movie to play or resume immediately, or tap its bottom-right download button for offline use.
 - A fixed app-managed download directory—no folder picker is required.
 - Verified downloaded files are preferred automatically, including when playback starts from the regular Home screen.
 - Airplane-mode handling that opens the native Downloads screen and plays completed downloads without contacting the workstation.
