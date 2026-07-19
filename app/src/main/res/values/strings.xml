@@ -38,6 +38,7 @@
     <string name="mobile_data_and_roaming_summary">Media will be downloaded over WiFi, mobile and roaming networks.</string>
     <string name="downloading">Downloading</string>
     <string name="download_no_storage_permission">Cannot download files without storage permissions</string>
+    <string name="download_storage_unavailable">Zadflix download storage is unavailable</string>
 
     <string name="media_service_generic_error">An error occurred</string>
     <string name="media_service_item_not_found">Media item could not be found</string>

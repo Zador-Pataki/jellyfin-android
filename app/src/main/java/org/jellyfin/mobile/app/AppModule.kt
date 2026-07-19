@@ -195,7 +195,7 @@ val applicationModule = module {
         )
     }
 
-    single(createdAtStart = true) { StorageManager(get(), get()) }
+    single(createdAtStart = true) { StorageManager(get()) }
     single { DownloadManager(get(), get(), get(), get(), get()) }
     single { DownloadNotificationManager(get()) }
     single { DownloadQueue(get(), get(), get(), get(), get(), get()) }

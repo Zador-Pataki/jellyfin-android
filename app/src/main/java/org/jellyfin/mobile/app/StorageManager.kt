@@ -1,46 +1,48 @@
 package org.jellyfin.mobile.app
 
+import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Environment
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.data.entity.DownloadFiles
 import org.jellyfin.mobile.downloads.DownloadStatus
 import timber.log.Timber
+import java.io.File
 
 class StorageManager(
     private val context: Context,
-    private val appPreferences: AppPreferences
 ) {
-    val defaultStorageLocation
-        get() = Environment.getExternalStorageDirectory().resolve(context.getString(R.string.app_name_short)).toUri()
+    private val fixedStorageDirectory: File
+        get() {
+            val downloadsRoot = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                ?: context.filesDir.resolve(DOWNLOADS_FALLBACK_DIRECTORY)
+            return downloadsRoot.resolve(context.getString(R.string.app_name_short))
+        }
 
-    fun getStorageLocation() = appPreferences.storageLocation?.toUri()?.let {
-        DocumentFile.fromTreeUri(context, it)
-    }
+    fun getStorageLocation(): DocumentFile? = runCatching {
+        val directory = fixedStorageDirectory
+        if (!directory.exists() && !directory.mkdirs()) {
+            error("Unable to create fixed download directory $directory")
+        }
+        if (!directory.isDirectory || !directory.canWrite()) {
+            error("Fixed download directory is not writable: $directory")
+        }
+
+        DocumentFile.fromFile(directory).also(::ensureNoMedia)
+    }.onFailure { error ->
+        Timber.e(error, "Unable to access fixed Zadflix download directory")
+    }.getOrNull()
 
     fun isStorageLocationAccessible(): Boolean {
         val documentFile = getStorageLocation()
         return documentFile != null && documentFile.exists() && documentFile.canWrite()
     }
 
-    fun changeStorageLocation(location: Uri): Boolean {
-        if (appPreferences.storageLocation?.toUri() == location) return true
-
-        return runCatching {
-            context.contentResolver.takePersistableUriPermission(
-                location,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
-
-            appPreferences.storageLocation = location.toString()
-            getStorageLocation()?.let(::ensureNoMedia)
-        }.onFailure { err ->
-            Timber.e(err, "Failed to change storage location to $location")
-        }.isFailure
+    fun getFile(uri: Uri): DocumentFile? = when (uri.scheme) {
+        ContentResolver.SCHEME_FILE -> uri.path?.let(::File)?.let(DocumentFile::fromFile)
+        else -> DocumentFile.fromSingleUri(context, uri)
     }
 
     fun verify(download: DownloadFiles): Boolean {
@@ -48,7 +50,7 @@ class StorageManager(
 
         for (file in download.files) {
             if (file.status != DownloadStatus.DOWNLOADED) return false
-            val documentFile = DocumentFile.fromSingleUri(context, file.uri)
+            val documentFile = getFile(file.uri)
             if (documentFile == null || !documentFile.exists() || documentFile.length() != file.size) {
                 return false
             }
@@ -65,5 +67,6 @@ class StorageManager(
 
     companion object {
         const val NOMEDIA_FILE = ".nomedia"
+        const val DOWNLOADS_FALLBACK_DIRECTORY = "downloads"
     }
 }

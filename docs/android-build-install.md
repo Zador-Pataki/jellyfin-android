@@ -114,6 +114,16 @@ The policy can be changed under **Zadflix settings > Video player > Mobile data 
 
 The quality control inside the player remains available as a per-playback override.
 
+## Offline downloads
+
+Zadflix does not ask the user to choose a download folder. Offline media is always stored in the app-managed directory on the phone's shared-storage volume:
+
+```text
+Android/data/com.zadorpataki.personalmedia.debug/files/Download/Zadflix
+```
+
+The directory needs no broad storage permission, is excluded from gallery indexing, and is removed when the debug app is uninstalled. Downloads remain accessible from **Profile > Downloads** inside Zadflix. Denying the optional notification permission hides download notifications but does not cancel or prevent the download itself.
+
 ## Current device audit
 
 `adb` is installed and functional on the verified Mac. On 2026-07-19, the `libreDebug` APK was installed and launched successfully on a Samsung Galaxy S23 Ultra (`SM-S918B`) without clearing app data.
@@ -125,6 +135,8 @@ During playback, the disposable streaming cache contained two files totaling abo
 The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
 
 The automatic mobile policy was also verified on the same phone over a real 5G connection through Tailscale using the 5.3 GB, 1080p `Obsession` movie. The original file averages about 6.5 Mbps and has measured one-second peaks near 17.7 Mbps. Zadflix instead requested a hardware-transcoded 1280x720 stream at about 2.3 Mbps total in three-second HLS segments. The first frame rendered after 4.2 seconds, playback began after 5.6 seconds, and the observed run continued for more than one minute without a rebuffer, load error, audio underrun, or connection abort. Wi-Fi was restored after the test.
+
+The fixed offline-download directory was verified on the same phone by starting a real `Obsession` download after denying notification permission. No folder picker appeared, the app created its fixed `Zadflix` directory and `.nomedia` marker automatically, both poster and movie files were written there, the movie file continued growing, and the item appeared with progress in **Profile > Downloads**.
 
 Administrator accounts also get a red circular-arrow button in the header immediately before Search. It starts Jellyfin's authenticated `RefreshLibrary` scheduled task, shows scan progress, and returns to Home when the scan completes. The button is hidden from non-administrator accounts, and the server independently enforces the same elevated permission. This is the manual refresh path when real-time library monitoring is disabled.
 

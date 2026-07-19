@@ -92,7 +92,7 @@ class DownloadQueue(
 
         // Verify downloaded files and skip if valid
         if (file.status == DownloadStatus.DOWNLOADED && file.size > 0) {
-            val documentFile = DocumentFile.fromSingleUri(context, file.uri)
+            val documentFile = storageManager.getFile(file.uri)
             if (documentFile?.exists() == true && documentFile.length() == file.size) return
         }
 
@@ -112,7 +112,7 @@ class DownloadQueue(
             // Update file record with final size and status
             downloadDao.updateFile(
                 file.copy(
-                    size = DocumentFile.fromSingleUri(context, file.uri)?.length() ?: 0L,
+                    size = storageManager.getFile(file.uri)?.length() ?: 0L,
                     status = DownloadStatus.DOWNLOADED,
                 ),
             )
