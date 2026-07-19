@@ -6,16 +6,13 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
 import androidx.fragment.app.Fragment
 import de.Maxr1998.modernpreferences.Preference
 import de.Maxr1998.modernpreferences.PreferencesAdapter
 import de.Maxr1998.modernpreferences.helpers.categoryHeader
 import de.Maxr1998.modernpreferences.helpers.checkBox
-import de.Maxr1998.modernpreferences.helpers.defaultOnCheckedChange
 import de.Maxr1998.modernpreferences.helpers.defaultOnClick
 import de.Maxr1998.modernpreferences.helpers.defaultOnSelectionChange
-import de.Maxr1998.modernpreferences.helpers.onClick
 import de.Maxr1998.modernpreferences.helpers.pref
 import de.Maxr1998.modernpreferences.helpers.screen
 import de.Maxr1998.modernpreferences.helpers.singleChoice
@@ -39,9 +36,7 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
 
     private val settingsAdapter: PreferencesAdapter by lazy { PreferencesAdapter(buildSettingsScreen()) }
     private lateinit var startLandscapeVideoInLandscapePreference: CheckBoxPreference
-    private lateinit var swipeGesturesPreference: CheckBoxPreference
     private lateinit var pressSpeedUpPreference: CheckBoxPreference
-    private lateinit var rememberBrightnessPreference: Preference
     private lateinit var backgroundAudioPreference: Preference
     private lateinit var horizontalGesturePreference: Preference
     private lateinit var directPlayAssPreference: Preference
@@ -107,8 +102,6 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
             initialSelection = VideoPlayerType.EXO_PLAYER
             defaultOnSelectionChange { selection ->
                 startLandscapeVideoInLandscapePreference.enabled = selection == VideoPlayerType.EXO_PLAYER
-                swipeGesturesPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
-                rememberBrightnessPreference.enabled = selection == VideoPlayerType.EXO_PLAYER && swipeGesturesPreference.checked
                 pressSpeedUpPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 backgroundAudioPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 horizontalGesturePreference.enabled = selection == VideoPlayerType.EXO_PLAYER
@@ -121,21 +114,6 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
         startLandscapeVideoInLandscapePreference = checkBox(Constants.PREF_EXOPLAYER_START_LANDSCAPE_VIDEO_IN_LANDSCAPE) {
             titleRes = R.string.pref_exoplayer_start_landscape_video_in_landscape
             enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
-        }
-        swipeGesturesPreference = checkBox(Constants.PREF_EXOPLAYER_ALLOW_SWIPE_GESTURES) {
-            titleRes = R.string.pref_exoplayer_allow_brightness_volume_gesture
-            enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
-            defaultValue = true
-            defaultOnCheckedChange { checked ->
-                rememberBrightnessPreference.enabled = checked
-            }
-        }
-        rememberBrightnessPreference = checkBox(Constants.PREF_EXOPLAYER_REMEMBER_BRIGHTNESS) {
-            titleRes = R.string.pref_exoplayer_remember_brightness
-            enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER && appPreferences.exoPlayerAllowSwipeGestures
-            defaultOnCheckedChange { checked ->
-                if (!checked) appPreferences.exoPlayerBrightness = BRIGHTNESS_OVERRIDE_NONE
-            }
         }
         pressSpeedUpPreference = checkBox(Constants.PREF_EXOPLAYER_ALLOW_PRESS_SPEED_UP) {
             titleRes = R.string.pref_exoplayer_allow_press_speed_up
@@ -298,7 +276,6 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
             titleRes = R.string.network_title
             initialSelection = DownloadMethod.DEFAULT.intValue
         }
-
     }
 
     companion object {

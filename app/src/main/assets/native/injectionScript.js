@@ -235,3 +235,79 @@
     window.setTimeout(ensureScanButton, 500);
     window.setInterval(ensureScanButton, 2000);
 })();
+
+(() => {
+    const detailPageSelector = '#itemDetailPage';
+    const minimalClass = 'zadflix-minimal-video-details';
+    const downloadClass = 'zadflix-download-action';
+    const minimalItemTypes = new Set(['Movie', 'Episode']);
+    let classificationVersion = 0;
+    let classifiedDetailPage;
+    let classifiedItemId;
+    let scheduled = false;
+
+    function getApiClient() {
+        return window.ServerConnections?.currentApiClient?.() ?? window.ApiClient;
+    }
+
+    function currentItemId() {
+        const queryIndex = window.location.hash.indexOf('?');
+        if (queryIndex === -1) return null;
+        return new URLSearchParams(window.location.hash.slice(queryIndex + 1)).get('id');
+    }
+
+    async function updateDetailLayout() {
+        scheduled = false;
+        const detailPage = document.querySelector(detailPageSelector);
+        const itemId = currentItemId();
+
+        if (detailPage === classifiedDetailPage && itemId === classifiedItemId) return;
+
+        const version = ++classificationVersion;
+        classifiedDetailPage?.classList.remove(minimalClass);
+        classifiedDetailPage?.querySelector('.btnDownload')?.classList.remove(downloadClass);
+        detailPage?.classList.remove(minimalClass);
+        detailPage?.querySelector('.btnDownload')?.classList.remove(downloadClass);
+        classifiedDetailPage = detailPage;
+        classifiedItemId = itemId;
+
+        const apiClient = getApiClient();
+        if (!detailPage || !itemId) return;
+        if (!apiClient?.getItem || !apiClient?.getCurrentUserId) {
+            classifiedDetailPage = undefined;
+            classifiedItemId = undefined;
+            return;
+        }
+
+        try {
+            const item = await apiClient.getItem(apiClient.getCurrentUserId(), itemId);
+            if (version !== classificationVersion || itemId !== currentItemId()) return;
+
+            const currentDetailPage = document.querySelector(detailPageSelector);
+            if (currentDetailPage && minimalItemTypes.has(item?.Type)) {
+                currentDetailPage.classList.add(minimalClass);
+                if (item?.Path) {
+                    currentDetailPage.querySelector('.btnDownload')?.classList.add(downloadClass);
+                }
+            }
+        } catch (error) {
+            console.debug('Zadflix could not simplify this media page.', error);
+            if (version === classificationVersion) {
+                classifiedDetailPage = undefined;
+                classifiedItemId = undefined;
+            }
+        }
+    }
+
+    function scheduleDetailLayoutUpdate() {
+        if (scheduled) return;
+        scheduled = true;
+        window.requestAnimationFrame(updateDetailLayout);
+    }
+
+    const observer = new MutationObserver(scheduleDetailLayoutUpdate);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    window.addEventListener('hashchange', scheduleDetailLayoutUpdate);
+    window.addEventListener('pageshow', scheduleDetailLayoutUpdate);
+    scheduleDetailLayoutUpdate();
+})();

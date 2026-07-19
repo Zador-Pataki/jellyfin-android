@@ -2,7 +2,6 @@ package org.jellyfin.mobile.app
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
 import androidx.core.content.edit
 import org.jellyfin.mobile.downloads.DownloadMethod
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentAction
@@ -88,22 +87,8 @@ class AppPreferences(context: Context) {
     val exoPlayerStartLandscapeVideoInLandscape: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_START_LANDSCAPE_VIDEO_IN_LANDSCAPE, false)
 
-    val exoPlayerAllowSwipeGestures: Boolean
-        get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_ALLOW_SWIPE_GESTURES, true)
-
     val exoPlayerAllowPressSpeedUp: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_ALLOW_PRESS_SPEED_UP, true)
-
-    val exoPlayerRememberBrightness: Boolean
-        get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_REMEMBER_BRIGHTNESS, false)
-
-    var exoPlayerBrightness: Float
-        get() = sharedPreferences.getFloat(Constants.PREF_EXOPLAYER_BRIGHTNESS, BRIGHTNESS_OVERRIDE_NONE)
-        set(value) {
-            sharedPreferences.edit {
-                putFloat(Constants.PREF_EXOPLAYER_BRIGHTNESS, value)
-            }
-        }
 
     val exoPlayerAllowBackgroundAudio: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_ALLOW_BACKGROUND_AUDIO, false)

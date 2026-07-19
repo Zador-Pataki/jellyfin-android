@@ -166,6 +166,55 @@ a,
     border-left-color: #ff5252;
 }
 
+#itemDetailPage.zadflix-minimal-video-details .itemMiscInfo,
+#itemDetailPage.zadflix-minimal-video-details .detailPagePrimaryContent,
+#itemDetailPage.zadflix-minimal-video-details .detailPageSecondaryContainer,
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons > :not(.btnPlay):not(.btnReplay):not(.btnDownload) {
+    display: none !important;
+}
+
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75em;
+}
+
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton {
+    background: #181818;
+    border: 0.08em solid rgb(255 255 255 / 25%);
+    border-radius: 0.35em;
+    color: #fff;
+    margin: 0;
+    min-height: 3em;
+    padding: 0.65em 1em;
+    width: auto;
+}
+
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .btnDownload.zadflix-download-action {
+    display: flex !important;
+}
+
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:not(.hide)::after,
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .btnDownload.zadflix-download-action::after {
+    content: attr(title);
+    font-size: 0.95em;
+    font-weight: 600;
+    margin-left: 0.5em;
+}
+
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:focus,
+#itemDetailPage.zadflix-minimal-video-details .mainDetailButtons .detailButton:hover {
+    background: #e50914;
+    border-color: #e50914;
+}
+
+.layout-mobile #itemDetailPage.zadflix-minimal-video-details .mainDetailButtons {
+    justify-content: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 @keyframes zadflix-library-scan-spin {
     to {
         transform: rotate(360deg);

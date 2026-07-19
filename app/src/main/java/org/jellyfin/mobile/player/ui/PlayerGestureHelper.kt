@@ -1,18 +1,13 @@
 package org.jellyfin.mobile.player.ui
 
 import android.content.res.Configuration
-import android.media.AudioManager
-import android.provider.Settings
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
-import android.view.WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -21,7 +16,6 @@ import org.jellyfin.mobile.R
 import org.jellyfin.mobile.app.AppPreferences
 import org.jellyfin.mobile.databinding.FragmentPlayerBinding
 import org.jellyfin.mobile.utils.Constants
-import org.jellyfin.mobile.utils.brightness
 import org.jellyfin.mobile.utils.dip
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,11 +28,7 @@ class PlayerGestureHelper(
     private val playerLockScreenHelper: PlayerLockScreenHelper,
 ) : KoinComponent {
     private val appPreferences: AppPreferences by inject()
-    private val audioManager: AudioManager by lazy { fragment.requireActivity().getSystemService()!! }
     private val playerView: PlayerView by playerBinding::playerView
-    private val gestureIndicatorOverlayLayout: LinearLayout by playerBinding::gestureOverlayLayout
-    private val gestureIndicatorOverlayImage: ImageView by playerBinding::gestureOverlayImage
-    private val gestureIndicatorOverlayProgress: ProgressBar by playerBinding::gestureOverlayProgress
     private val seekOverlayLayout: LinearLayout by playerBinding::seekOverlayLayout
     private val seekOverlayImage: ImageView by playerBinding::seekOverlayImage
     private val seekOverlayText: TextView by playerBinding::seekOverlayText
@@ -46,24 +36,11 @@ class PlayerGestureHelper(
     private val seekOverlayProgress: ProgressBar by playerBinding::seekOverlayProgress
     private var isOnPressingSpeedUp = false
 
-    init {
-        if (appPreferences.exoPlayerRememberBrightness) {
-            fragment.requireActivity().window.brightness = appPreferences.exoPlayerBrightness
-        }
-    }
-
     /**
      * Tracks whether video content should fill the screen, cutting off unwanted content on the sides.
      * Useful on wide-screen phones to remove black bars from some movies.
      */
     private var isZoomEnabled = false
-
-    /**
-     * Tracks a value during a swipe gesture (between multiple onScroll calls).
-     * When the gesture starts it's reset to an initial value and gets increased or decreased
-     * (depending on the direction) as the gesture progresses.
-     */
-    private var swipeGestureValueTracker = -1f
 
     private enum class GestureDirection {
         NONE,
@@ -104,13 +81,6 @@ class PlayerGestureHelper(
     }
 
     /**
-     * Runnable that hides [gestureIndicatorOverlayLayout]
-     */
-    private val hideGestureIndicatorOverlayAction = Runnable {
-        gestureIndicatorOverlayLayout.isVisible = false
-    }
-
-    /**
      * Runnable that hides [seekOverlayLayout]
      */
     private val hideSeekOverlayAction = Runnable {
@@ -131,7 +101,7 @@ class PlayerGestureHelper(
     )
 
     /**
-     * Handles double tap to seek and brightness/volume gestures
+     * Handles taps, horizontal seeking, and long-press speed changes.
      */
     private val gestureDetector = GestureDetector(
         playerView.context,
@@ -222,10 +192,6 @@ class PlayerGestureHelper(
                         return false
                     }
 
-                    // Hide vertical overlay
-                    gestureIndicatorOverlayLayout.isVisible = false
-                    gestureIndicatorOverlayLayout.removeCallbacks(hideGestureIndicatorOverlayAction)
-
                     // Initialize seek start position on first swipe
                     if (!isHorizontalSeeking) {
                         val player = playerView.player
@@ -297,75 +263,7 @@ class PlayerGestureHelper(
                     mediaDuration = 0L
                     seekOverlayLayout.isVisible = false
                 }
-
-
-                if (!appPreferences.exoPlayerAllowSwipeGestures) {
-                    return false
-                }
-                // Handle vertical swipe for brightness/volume (existing logic)
-                if (currentGesture != GestureDirection.VERTICAL) {
-                    return false
-                }
-
-                // Hide horizontal overlay
-                seekOverlayLayout.isVisible = false
-                seekOverlayLayout.removeCallbacks(hideSeekOverlayAction)
-
-                val viewCenterX = playerView.measuredWidth / 2
-
-                // Distance to swipe to go from min to max
-                val distanceFull = playerView.measuredHeight * Constants.FULL_SWIPE_RANGE_SCREEN_RATIO
-                val ratioChange = distanceY / distanceFull
-
-                if (firstEvent.x.toInt() > viewCenterX) {
-                    // Swiping on the right, change volume
-
-                    val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                    if (swipeGestureValueTracker == -1f) swipeGestureValueTracker = currentVolume.toFloat()
-
-                    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                    val change = ratioChange * maxVolume
-                    swipeGestureValueTracker += change
-
-                    val toSet = swipeGestureValueTracker.toInt().coerceIn(0, maxVolume)
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, toSet, 0)
-
-                    gestureIndicatorOverlayImage.setImageResource(R.drawable.ic_volume_white_24dp)
-                    gestureIndicatorOverlayProgress.max = maxVolume
-                    gestureIndicatorOverlayProgress.progress = toSet
-                } else {
-                    // Swiping on the left, change brightness
-
-                    val window = fragment.requireActivity().window
-                    val brightnessRange = BRIGHTNESS_OVERRIDE_OFF..BRIGHTNESS_OVERRIDE_FULL
-
-                    // Initialize on first swipe
-                    if (swipeGestureValueTracker == -1f) {
-                        val brightness = window.brightness
-                        swipeGestureValueTracker = when (brightness) {
-                            in brightnessRange -> brightness
-                            else -> {
-                                Settings.System.getFloat(
-                                    fragment.requireActivity().contentResolver,
-                                    Settings.System.SCREEN_BRIGHTNESS,
-                                ) / Constants.SCREEN_BRIGHTNESS_MAX
-                            }
-                        }
-                    }
-
-                    swipeGestureValueTracker = (swipeGestureValueTracker + ratioChange).coerceIn(brightnessRange)
-                    window.brightness = swipeGestureValueTracker
-                    if (appPreferences.exoPlayerRememberBrightness) {
-                        appPreferences.exoPlayerBrightness = swipeGestureValueTracker
-                    }
-
-                    gestureIndicatorOverlayImage.setImageResource(R.drawable.ic_brightness_white_24dp)
-                    gestureIndicatorOverlayProgress.max = Constants.PERCENT_MAX
-                    gestureIndicatorOverlayProgress.progress = (swipeGestureValueTracker * Constants.PERCENT_MAX).toInt()
-                }
-
-                gestureIndicatorOverlayLayout.isVisible = true
-                return true
+                return false
             }
         },
     )
@@ -426,18 +324,6 @@ class PlayerGestureHelper(
                 seekTimeAccumulator = 0L
                 seekStartPosition = 0L
                 mediaDuration = 0L
-
-                // Hide gesture indicator after timeout, if shown
-                gestureIndicatorOverlayLayout.apply {
-                    if (isVisible) {
-                        removeCallbacks(hideGestureIndicatorOverlayAction)
-                        postDelayed(
-                            hideGestureIndicatorOverlayAction,
-                            Constants.DEFAULT_CENTER_OVERLAY_TIMEOUT_MS.toLong(),
-                        )
-                    }
-                }
-                swipeGestureValueTracker = -1f
             }
             true
         }
