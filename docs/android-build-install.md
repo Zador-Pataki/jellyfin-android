@@ -88,6 +88,14 @@ The `-r` option preserves the debug app's existing data during an upgrade when t
 
 After installation, open the app from the launcher and connect it to the workstation's Jellyfin server address. The workstation must be awake, Jellyfin Server must be running, and the phone must be able to reach the workstation over the selected network.
 
+For access away from the home Wi-Fi, install Tailscale on the phone, sign in to the same tailnet as the workstation, and use:
+
+```text
+http://zadors-macbook-pro.tailce1ef2.ts.net:8096
+```
+
+The numeric fallback is `http://100.123.144.13:8096`. Both addresses were verified during setup, and Jellyfin's automatic router port mapping remains disabled.
+
 ## Current device audit
 
 `adb` is installed and functional on the verified Mac. The audit performed while preparing this guide found no connected Android device, and no APK was installed to a physical device.

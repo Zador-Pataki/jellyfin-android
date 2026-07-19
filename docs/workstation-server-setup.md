@@ -13,7 +13,7 @@ The workstation inspection on 2026-07-19 found:
 - A Movies library rooted at `/Users/zadorpataki/Media/Movies`.
 - A TV Shows library rooted at `/Users/zadorpataki/Media/TVShows`.
 - VideoToolbox hardware decoding/encoding and tone mapping enabled on the Apple M2 Pro.
-- UPnP and direct remote access disabled until the private-network phase is complete.
+- Tailscale private remote access enabled and verified at `100.123.144.13`; UPnP remains disabled, so Jellyfin does not request a public router port mapping.
 - `$HOME/Movies` contains media files alongside DaVinci Resolve and Apple TV-managed folders. It should not be selected wholesale as a Jellyfin movie library.
 
 Existing files under `$HOME/Movies` were not moved or renamed. A small synthetic test movie was generated at `/Users/zadorpataki/Media/Movies/TV App Test (2026)` to verify scanning and byte-range streaming; it may be removed after phone testing.
@@ -83,7 +83,7 @@ security find-generic-password -a zadorpataki -s tv-app-jellyfin-admin -w
 
 That command prints the password, so run it only in a private terminal and do not paste the result into chat, documentation, or Git.
 
-Do not expose port 8096 directly to the public internet. Initial Android testing should happen with the phone and workstation on the same trusted network. Remote access can be added later through a private VPN such as Tailscale.
+Do not expose port 8096 directly to the public internet. Remote access is provided through Tailscale, and automatic router port mapping remains disabled.
 
 ## Connect the Android client on the local network
 
@@ -95,7 +95,32 @@ http://192.168.1.112:8096
 
 The router may change that address. Check the current Wi-Fi address with `ipconfig getifaddr en0` and append `:8096`.
 
-The workstation must be awake, Jellyfin Server must be running, and both devices must be able to reach each other. Verify playback on local Wi-Fi before configuring remote access or transcoding.
+The workstation must be awake, Jellyfin Server must be running, and both devices must be able to reach each other. Verify playback separately over local Wi-Fi and over Tailscale before tuning transcoding.
+
+## Connect the Android client through Tailscale
+
+Tailscale is signed in and running on the workstation. Both of these private server addresses were verified on 2026-07-19:
+
+```text
+http://zadors-macbook-pro.tailce1ef2.ts.net:8096
+http://100.123.144.13:8096
+```
+
+Prefer the MagicDNS name because it remains readable and avoids copying the numeric address. To connect from the phone:
+
+1. Install Tailscale from Google Play and sign in to the same `zadorpataki14@gmail.com` tailnet.
+2. Confirm that Tailscale shows the phone as connected.
+3. Open Personal Media and add `http://zadors-macbook-pro.tailce1ef2.ts.net:8096` as the server.
+4. Sign in with the Jellyfin administrator username and the password stored in the Mac's Keychain.
+
+The `http` URL is carried inside Tailscale's encrypted tunnel; port 8096 is not forwarded through the router. The workstation must remain awake with Jellyfin and Tailscale running. Verify either address from the Mac with:
+
+```sh
+JELLYFIN_URL="http://100.123.144.13:8096" ./scripts/jellyfin-status.sh
+JELLYFIN_URL="http://zadors-macbook-pro.tailce1ef2.ts.net:8096" ./scripts/jellyfin-status.sh
+```
+
+For a real away-from-home test, leave Tailscale enabled on the phone, turn off phone Wi-Fi, and play the synthetic test movie over cellular data. If the MagicDNS name does not resolve, confirm that both devices are online in the same tailnet and try the numeric Tailscale address.
 
 ## Verified streaming behavior
 
