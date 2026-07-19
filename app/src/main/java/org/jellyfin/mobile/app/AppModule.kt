@@ -25,6 +25,7 @@ import okhttp3.OkHttpClient
 import org.jellyfin.mobile.MainViewModel
 import org.jellyfin.mobile.bridge.MediaSegments
 import org.jellyfin.mobile.bridge.NativePlayer
+import org.jellyfin.mobile.bridge.OfflinePlaybackInterface
 import org.jellyfin.mobile.downloads.DownloadManager
 import org.jellyfin.mobile.downloads.DownloadNotificationManager
 import org.jellyfin.mobile.downloads.DownloadQueue
@@ -79,6 +80,7 @@ val applicationModule = module {
 
     // Bridge interfaces
     single { NativePlayer(get(), get(), get(named(PLAYER_EVENT_CHANNEL))) }
+    single { OfflinePlaybackInterface(androidApplication(), get(), get(), get()) }
     single { MediaSegments(get()) }
 
     // ViewModels

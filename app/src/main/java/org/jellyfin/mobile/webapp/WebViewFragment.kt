@@ -30,9 +30,11 @@ import org.jellyfin.mobile.bridge.ExternalPlayer
 import org.jellyfin.mobile.bridge.MediaSegments
 import org.jellyfin.mobile.bridge.NativeInterface
 import org.jellyfin.mobile.bridge.NativePlayer
+import org.jellyfin.mobile.bridge.OfflinePlaybackInterface
 import org.jellyfin.mobile.bridge.ZadflixStartupInterface
 import org.jellyfin.mobile.data.entity.ServerEntity
 import org.jellyfin.mobile.databinding.FragmentWebviewBinding
+import org.jellyfin.mobile.downloads.DownloadsFragment
 import org.jellyfin.mobile.setup.ConnectFragment
 import org.jellyfin.mobile.utils.AndroidVersion
 import org.jellyfin.mobile.utils.BackPressInterceptor
@@ -41,6 +43,7 @@ import org.jellyfin.mobile.utils.Constants.FRAGMENT_WEB_VIEW_EXTRA_SERVER
 import org.jellyfin.mobile.utils.applyDefault
 import org.jellyfin.mobile.utils.applyWindowInsetsAsMargins
 import org.jellyfin.mobile.utils.dip
+import org.jellyfin.mobile.utils.extensions.addFragment
 import org.jellyfin.mobile.utils.extensions.getParcelableCompat
 import org.jellyfin.mobile.utils.extensions.replaceFragment
 import org.jellyfin.mobile.utils.fadeIn
@@ -57,6 +60,7 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
     private lateinit var assetsPathHandler: AssetsPathHandler
     private lateinit var jellyfinWebViewClient: JellyfinWebViewClient
     private val nativePlayer: NativePlayer by inject()
+    private val offlinePlaybackInterface: OfflinePlaybackInterface by inject()
     private lateinit var externalPlayer: ExternalPlayer
     private val mediaSegments: MediaSegments by inject()
 
@@ -194,6 +198,7 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
             "ZadflixStartup",
         )
         addJavascriptInterface(nativePlayer, "NativePlayer")
+        addJavascriptInterface(offlinePlaybackInterface, "ZadflixOfflinePlayback")
         addJavascriptInterface(externalPlayer, "ExternalPlayer")
         addJavascriptInterface(mediaSegments, "MediaSegments")
 
@@ -263,7 +268,21 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
 
     private fun handleError() {
         connected = false
-        onSelectServer(error = true)
+        if (offlinePlaybackInterface.isOffline()) {
+            runOnUiThread {
+                val activity = activity
+                val currentFragment = parentFragmentManager.findFragmentById(R.id.fragment_container)
+                if (
+                    activity != null &&
+                    activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) &&
+                    currentFragment !is DownloadsFragment
+                ) {
+                    parentFragmentManager.addFragment<DownloadsFragment>()
+                }
+            }
+        } else {
+            onSelectServer(error = true)
+        }
     }
 
     override fun onShowFileChooser(intent: Intent, filePathCallback: ValueCallback<Array<Uri>>) {

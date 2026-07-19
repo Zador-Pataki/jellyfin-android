@@ -6,7 +6,9 @@ import android.net.Uri
 import android.os.Environment
 import androidx.documentfile.provider.DocumentFile
 import org.jellyfin.mobile.R
+import org.jellyfin.mobile.data.entity.DownloadFileEntity
 import org.jellyfin.mobile.data.entity.DownloadFiles
+import org.jellyfin.mobile.downloads.DownloadFileType
 import org.jellyfin.mobile.downloads.DownloadStatus
 import timber.log.Timber
 import java.io.File
@@ -48,15 +50,18 @@ class StorageManager(
     fun verify(download: DownloadFiles): Boolean {
         if (download.files.isEmpty()) return false
 
-        for (file in download.files) {
-            if (file.status != DownloadStatus.DOWNLOADED) return false
-            val documentFile = getFile(file.uri)
-            if (documentFile == null || !documentFile.exists() || documentFile.length() != file.size) {
-                return false
-            }
-        }
+        return download.files.all(::verify)
+    }
 
-        return true
+    fun verifyPlayback(download: DownloadFiles): Boolean = download.files
+        .find { it.type == DownloadFileType.ITEM }
+        ?.let(::verify)
+        ?: false
+
+    private fun verify(file: DownloadFileEntity): Boolean {
+        if (file.status != DownloadStatus.DOWNLOADED || file.size <= 0) return false
+        val documentFile = getFile(file.uri)
+        return documentFile != null && documentFile.exists() && documentFile.length() == file.size
     }
 
     private fun ensureNoMedia(documentFile: DocumentFile) {

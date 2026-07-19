@@ -60,7 +60,7 @@ fun LogoHeader() {
         modifier = Modifier.padding(vertical = 25.dp),
     ) {
         Image(
-            painter = painterResource(R.drawable.app_logo),
+            painter = painterResource(R.drawable.zadflix_icon),
             modifier = Modifier
                 .height(72.dp),
             contentDescription = null,

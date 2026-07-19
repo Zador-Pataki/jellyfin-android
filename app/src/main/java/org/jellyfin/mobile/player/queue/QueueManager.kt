@@ -12,7 +12,9 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jellyfin.mobile.app.STREAMING_MEDIA_SOURCE_FACTORY
+import org.jellyfin.mobile.app.StorageManager
 import org.jellyfin.mobile.data.dao.DownloadDao
+import org.jellyfin.mobile.data.entity.DownloadFiles
 import org.jellyfin.mobile.downloads.DownloadFileType
 import org.jellyfin.mobile.player.PlayerException
 import org.jellyfin.mobile.player.PlayerViewModel
@@ -50,11 +52,13 @@ class QueueManager(
     private val mediaSourceResolver: MediaSourceResolver by inject()
     private val deviceProfileBuilder: DeviceProfileBuilder by inject()
     private val downloadDao: DownloadDao by inject()
+    private val storageManager: StorageManager by inject()
     private val playbackNetworkPolicy: PlaybackNetworkPolicy by inject()
     private val deviceProfile = deviceProfileBuilder.getDeviceProfile()
 
     private var currentQueue: List<UUID> = emptyList()
     private var currentQueueIndex: Int = 0
+    private var downloadsOnly: Boolean = false
 
     private var playbackRetries = 0
     private var lastPlaybackError = 0L
@@ -74,6 +78,7 @@ class QueueManager(
     suspend fun initializePlaybackQueue(playOptions: PlayOptions): PlayerException? {
         currentQueue = playOptions.ids
         currentQueueIndex = playOptions.startIndex
+        downloadsOnly = playOptions.playFromDownloads == true
         resetPlaybackFallback()
 
         val itemId = when {
@@ -81,13 +86,19 @@ class QueueManager(
             else -> playOptions.mediaSourceId?.toUUIDOrNull()
         } ?: return PlayerException.InvalidPlayOptions()
 
-        when (playOptions.playFromDownloads) {
-            true -> playOptions.mediaSourceId?.let {
-                startDownloadPlayback(
-                    itemId = itemId,
-                    playWhenReady = true,
-                )
-            }
+        val verifiedDownload = withContext(Dispatchers.IO) {
+            downloadDao.getDownloadWithFilesByItemId(itemId)?.takeIf(storageManager::verifyPlayback)
+        }
+
+        return when {
+            verifiedDownload != null -> startDownloadPlayback(
+                downloadFiles = verifiedDownload,
+                startTime = playOptions.startPosition,
+                audioStreamIndex = playOptions.audioStreamIndex,
+                subtitleStreamIndex = playOptions.subtitleStreamIndex,
+                playWhenReady = true,
+            )
+            playOptions.playFromDownloads == true -> PlayerException.UnsupportedContent()
             else -> startRemotePlayback(
                 itemId = itemId,
                 mediaSourceId = playOptions.mediaSourceId,
@@ -98,24 +109,16 @@ class QueueManager(
                 playWhenReady = true,
             )
         }
-
-        return null
     }
 
     private suspend fun startDownloadPlayback(
-        itemId: UUID,
+        downloadFiles: DownloadFiles,
         startTime: Duration? = null,
         audioStreamIndex: Int? = null,
         subtitleStreamIndex: Int? = null,
         playWhenReady: Boolean = true,
     ): PlayerException? {
-        val download = withContext(Dispatchers.IO) {
-            downloadDao.getDownloadByItemId(itemId)
-        } ?: return PlayerException.UnsupportedContent()
-
-        val files = withContext(Dispatchers.IO) {
-            downloadDao.getFiles(download.id)
-        }
+        val (download, files) = downloadFiles
 
         val mainFile = files.find { it.type == DownloadFileType.ITEM } ?: return PlayerException.NetworkFailure()
 
@@ -127,9 +130,6 @@ class QueueManager(
             playbackDetails = PlaybackDetails(startTime, audioStreamIndex, subtitleStreamIndex),
             remoteFileUri = mainFile.uri,
         )
-        startTime?.let { duration -> mediaSource.startTime = duration }
-        audioStreamIndex?.let { index -> mediaSource.selectAudioStream(mediaSource.audioStreams[index]) }
-        subtitleStreamIndex?.let { index -> mediaSource.selectSubtitleStream(mediaSource.subtitleStreams[index]) }
 
         _currentMediaSource.value = mediaSource
 
@@ -137,6 +137,26 @@ class QueueManager(
         viewModel.load(mediaSource, prepareStreams(mediaSource), playWhenReady)
 
         return null
+    }
+
+    private suspend fun startDownloadPlayback(
+        itemId: UUID,
+        startTime: Duration? = null,
+        audioStreamIndex: Int? = null,
+        subtitleStreamIndex: Int? = null,
+        playWhenReady: Boolean = true,
+    ): PlayerException? {
+        val downloadFiles = withContext(Dispatchers.IO) {
+            downloadDao.getDownloadWithFilesByItemId(itemId)?.takeIf(storageManager::verifyPlayback)
+        } ?: return PlayerException.UnsupportedContent()
+
+        return startDownloadPlayback(
+            downloadFiles = downloadFiles,
+            startTime = startTime,
+            audioStreamIndex = audioStreamIndex,
+            subtitleStreamIndex = subtitleStreamIndex,
+            playWhenReady = playWhenReady,
+        )
     }
 
     /**
@@ -167,8 +187,8 @@ class QueueManager(
             enableDirectStream = enableDirectStream,
         ).onSuccess { jellyfinMediaSource ->
             // Ensure transcoding of the current element is stopped
-            getCurrentMediaSourceOrNull()?.let { oldMediaSource ->
-                viewModel.stopTranscoding(oldMediaSource as RemoteJellyfinMediaSource)
+            (getCurrentMediaSourceOrNull() as? RemoteJellyfinMediaSource)?.let { oldMediaSource ->
+                viewModel.stopTranscoding(oldMediaSource)
             }
 
             _currentMediaSource.value = jellyfinMediaSource
@@ -275,15 +295,13 @@ class QueueManager(
     suspend fun previous(): Boolean {
         if (!hasPrevious()) return false
 
-        val currentMediaSource = getCurrentMediaSourceOrNull() as? RemoteJellyfinMediaSource ?: return false
-
         resetPlaybackFallback()
 
-        startRemotePlayback(
-            itemId = currentQueue[--currentQueueIndex],
-            mediaSourceId = null,
-            maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
-        )
+        val targetIndex = currentQueueIndex - 1
+        val error = startQueueItem(currentQueue[targetIndex])
+        if (error != null) return false
+
+        currentQueueIndex = targetIndex
         return true
     }
 
@@ -292,19 +310,29 @@ class QueueManager(
 
         resetPlaybackFallback()
 
-        when (val currentMediaSource = getCurrentMediaSourceOrNull()) {
-            is LocalJellyfinMediaSource -> startDownloadPlayback(
-                itemId = currentQueue[++currentQueueIndex],
-                playWhenReady = true,
-            )
-            is RemoteJellyfinMediaSource -> startRemotePlayback(
-                itemId = currentQueue[++currentQueueIndex],
-                mediaSourceId = null,
-                maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
-            )
-            null -> return false
-        }
+        val targetIndex = currentQueueIndex + 1
+        val error = startQueueItem(currentQueue[targetIndex])
+        if (error != null) return false
+
+        currentQueueIndex = targetIndex
         return true
+    }
+
+    private suspend fun startQueueItem(itemId: UUID): PlayerException? {
+        val verifiedDownload = withContext(Dispatchers.IO) {
+            downloadDao.getDownloadWithFilesByItemId(itemId)?.takeIf(storageManager::verifyPlayback)
+        }
+        if (verifiedDownload != null) return startDownloadPlayback(verifiedDownload)
+        if (downloadsOnly) return PlayerException.UnsupportedContent()
+
+        val maxStreamingBitrate = (getCurrentMediaSourceOrNull() as? RemoteJellyfinMediaSource)
+            ?.maxStreamingBitrate
+            ?: playbackNetworkPolicy.currentDecision().maxStreamingBitrate
+        return startRemotePlayback(
+            itemId = itemId,
+            mediaSourceId = null,
+            maxStreamingBitrate = maxStreamingBitrate,
+        )
     }
 
     /**

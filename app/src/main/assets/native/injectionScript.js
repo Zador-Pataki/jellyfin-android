@@ -52,6 +52,17 @@
 })();
 
 (() => {
+    document.addEventListener('click', event => {
+        const card = event.target.closest?.('.card[data-id][data-mediatype="Video"]');
+        const itemId = card?.dataset.id;
+        if (!itemId || !window.ZadflixOfflinePlayback?.handleItemClick(itemId)) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }, true);
+})();
+
+(() => {
     const buttonId = 'zadflix-library-scan-button';
     const statusId = 'zadflix-library-scan-status';
     const scanTaskKey = 'RefreshLibrary';
