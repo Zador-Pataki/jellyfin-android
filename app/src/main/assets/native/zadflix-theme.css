@@ -167,7 +167,26 @@ a,
 }
 
 .card[data-type='Movie'][data-mediatype='Video'] .cardOverlayButton.itemAction[data-action='play'] {
-    display: none !important;
+    align-items: center;
+    background: rgb(229 9 20 / 92%) !important;
+    border: 0.12em solid rgb(255 255 255 / 90%);
+    border-radius: 50%;
+    bottom: auto !important;
+    display: flex !important;
+    height: 3.5em;
+    justify-content: center;
+    left: 50% !important;
+    padding: 0;
+    right: auto !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+    width: 3.5em;
+    z-index: 4;
+}
+
+.card[data-type='Movie'][data-mediatype='Video'] .cardOverlayButton.itemAction[data-action='play']:focus,
+.card[data-type='Movie'][data-mediatype='Video'] .cardOverlayButton.itemAction[data-action='play']:hover {
+    background: #ff3340 !important;
 }
 
 .zadflix-card-download {
