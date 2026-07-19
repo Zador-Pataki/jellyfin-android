@@ -142,17 +142,16 @@ Administrator accounts also get a red circular-arrow button in the header immedi
 
 ## Bring in upstream Jellyfin updates
 
-Keep `origin` pointed at the personal fork and `upstream` pointed at `https://github.com/jellyfin/jellyfin-android.git`. Update without rewriting the personal branch:
+Keep `origin` pointed at the personal fork and `upstream` pointed at `https://github.com/jellyfin/jellyfin-android.git`. The fork's `master` branch contains Zadflix. Merge upstream updates without rewriting it:
 
 ```sh
 git status --short
-git fetch upstream
 git switch master
-git merge --ff-only upstream/master
-git push origin master
-git switch codex/personal-media-app
-git merge master
+git pull --ff-only origin master
+git fetch upstream
+git merge upstream/master
 ./scripts/build-android.sh --tests
+git push origin master
 ```
 
-Stop before switching branches if `git status --short` reports uncommitted work. Resolve merge conflicts and rerun the tests locally before pushing the personal branch.
+Stop before switching branches if `git status --short` reports uncommitted work. Resolve merge conflicts and rerun the tests locally before pushing `master`.

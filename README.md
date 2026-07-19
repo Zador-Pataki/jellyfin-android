@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Zador-Pataki/jellyfin-android/tree/codex/personal-media-app"><img alt="Development branch" src="https://img.shields.io/badge/branch-codex%2Fpersonal--media--app-e50914"></a>
+  <a href="https://github.com/Zador-Pataki/jellyfin-android/tree/master"><img alt="Master branch" src="https://img.shields.io/badge/branch-master-e50914"></a>
   <a href="LICENSE.md"><img alt="GPL v2 license" src="https://img.shields.io/badge/license-GPLv2-e50914"></a>
   <img alt="Android 5.0 or newer" src="https://img.shields.io/badge/Android-5.0%2B-e50914">
   <img alt="Project status: personal fork" src="https://img.shields.io/badge/status-personal%20fork-555555">
@@ -182,11 +182,10 @@ Important behavior:
 - Android build-tools 36.0.0.
 - Android Platform-Tools for USB installation.
 
-Clone the active Zadflix branch:
+Clone Zadflix from the fork's default `master` branch:
 
 ```sh
-git clone --branch codex/personal-media-app \
-  https://github.com/Zador-Pataki/jellyfin-android.git
+git clone https://github.com/Zador-Pataki/jellyfin-android.git
 cd jellyfin-android
 ```
 
@@ -235,7 +234,7 @@ The debug package is `com.zadorpataki.personalmedia.debug`, so it can coexist wi
 
 ## Verification status
 
-The current development branch has been exercised on a Samsung Galaxy S23 Ultra with the workstation running Jellyfin 10.11.11:
+The current `master` branch has been exercised on a Samsung Galaxy S23 Ultra with the workstation running Jellyfin 10.11.11:
 
 - Local Wi-Fi direct playback works at original quality.
 - Cellular playback through Tailscale uses hardware-transcoded 720p at approximately 2.3 Mbps under the automatic policy.
@@ -255,22 +254,20 @@ git diff --check
 
 ## Branches and upstream updates
 
-- `master` tracks upstream Jellyfin for Android.
-- `codex/personal-media-app` contains the Zadflix customization.
-- `origin` is the personal fork.
+- `master` is the fork's default branch and contains all Zadflix customization.
+- `origin` is the personal Zadflix fork.
 - `upstream` is `https://github.com/jellyfin/jellyfin-android.git`.
 
-Bring in upstream changes without rewriting the Zadflix branch:
+Merge upstream Jellyfin changes into Zadflix without rewriting `master`:
 
 ```sh
 git status --short
-git fetch upstream
 git switch master
-git merge --ff-only upstream/master
-git push origin master
-git switch codex/personal-media-app
-git merge master
+git pull --ff-only origin master
+git fetch upstream
+git merge upstream/master
 ./scripts/build-android.sh --tests
+git push origin master
 ```
 
 Stop before switching branches when the working tree contains uncommitted changes.
