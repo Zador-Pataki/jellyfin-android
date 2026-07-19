@@ -98,6 +98,22 @@ http://zadors-macbook-pro.tailce1ef2.ts.net:8096
 
 The numeric fallback is `http://100.123.144.13:8096`. Both addresses were verified during setup, and Jellyfin's automatic router port mapping remains disabled.
 
+## Mobile-data playback
+
+Zadflix automatically distinguishes unmetered Wi-Fi from metered/mobile networks, including cellular connections routed through Tailscale. The default mobile-data policy requests a server-generated stream capped at 2.5 Mbps, adds a 1280x720 option to the quality menu, and uses the player's Extra Large buffer profile. Wi-Fi remains uncapped so compatible media can play at original quality.
+
+The player starts from seconds of playable buffer, not from a percentage of the whole movie. With the default mobile policy it waits for about five seconds of playable media before starting and about ten seconds after a rebuffer. Media continues to download only into the bounded temporary cache and is discarded by the existing cache lifecycle; this does not turn streaming into a permanent download.
+
+The policy can be changed under **Zadflix settings > Video player > Mobile data quality**:
+
+- **Auto (recommended)**: original quality on Wi-Fi and up to 2.5 Mbps on metered/mobile connections.
+- **Original quality**: no mobile bitrate cap; requires a consistently fast connection with headroom above the file's peak bitrate.
+- **Data saver**: up to 1.5 Mbps.
+- **Balanced**: up to 2.5 Mbps.
+- **High**: up to 4 Mbps.
+
+The quality control inside the player remains available as a per-playback override.
+
 ## Current device audit
 
 `adb` is installed and functional on the verified Mac. On 2026-07-19, the `libreDebug` APK was installed and launched successfully on a Samsung Galaxy S23 Ultra (`SM-S918B`) without clearing app data.
@@ -107,6 +123,8 @@ The phone was connected over cellular through Tailscale and reached Jellyfin at 
 During playback, the disposable streaming cache contained two files totaling about 2.6 MiB. After force-stopping and restarting the app, it contained no media payloads (only up to 4 KiB of cache bookkeeping), while the server selection and authenticated session remained available. The app-specific Android battery-optimization exemption was also enabled so playback can continue with the screen off.
 
 The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
+
+The automatic mobile policy was also verified on the same phone over a real 5G connection through Tailscale using the 5.3 GB, 1080p `Obsession` movie. The original file averages about 6.5 Mbps and has measured one-second peaks near 17.7 Mbps. Zadflix instead requested a hardware-transcoded 1280x720 stream at about 2.3 Mbps total in three-second HLS segments. The first frame rendered after 4.2 seconds, playback began after 5.6 seconds, and the observed run continued for more than one minute without a rebuffer, load error, audio underrun, or connection abort. Wi-Fi was restored after the test.
 
 Administrator accounts also get a red circular-arrow button in the header immediately before Search. It starts Jellyfin's authenticated `RefreshLibrary` scheduled task, shows scan progress, and returns to Home when the scan completes. The button is hidden from non-administrator accounts, and the server independently enforces the same elevated permission. This is the manual refresh path when real-time library monitoring is disabled.
 

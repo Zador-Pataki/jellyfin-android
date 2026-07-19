@@ -16,6 +16,7 @@ class QualityOptionsProvider {
         QualityOption(maxHeight = 720, bitrate = 8000000),
         QualityOption(maxHeight = 720, bitrate = 6000000),
         QualityOption(maxHeight = 720, bitrate = 4000000),
+        QualityOption(maxHeight = 720, bitrate = 2500000),
         QualityOption(maxHeight = 480, bitrate = 3000000),
         QualityOption(maxHeight = 480, bitrate = 1500000),
         QualityOption(maxHeight = 480, bitrate = 720000),

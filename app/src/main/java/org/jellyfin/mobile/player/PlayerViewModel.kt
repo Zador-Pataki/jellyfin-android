@@ -44,6 +44,7 @@ import org.jellyfin.mobile.player.interaction.PlayerMediaSessionCallback
 import org.jellyfin.mobile.player.interaction.PlayerNotificationHelper
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentAction
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
+import org.jellyfin.mobile.player.network.PlaybackNetworkPolicy
 import org.jellyfin.mobile.player.queue.QueueManager
 import org.jellyfin.mobile.player.source.JellyfinMediaSource
 import org.jellyfin.mobile.player.source.RemoteJellyfinMediaSource
@@ -103,6 +104,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     private val userApi: UserApi = apiClient.userApi
 
     private val appPreferences: AppPreferences by inject()
+    private val playbackNetworkPolicy: PlaybackNetworkPolicy by inject()
     private val lifecycleObserver = PlayerLifecycleObserver(this)
     private val audioManager: AudioManager by lazy { getApplication<Application>().getSystemService()!! }
     val notificationHelper: PlayerNotificationHelper by lazy { PlayerNotificationHelper(this) }
@@ -230,7 +232,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
      */
     fun setupPlayer() {
         @Suppress("MagicNumber")
-        val loadControl = when (appPreferences.exoPlayerNetworkBuffer) {
+        val loadControl = when (playbackNetworkPolicy.effectiveBufferPreference()) {
             Constants.NETWORK_BUFFER_LARGE -> DefaultLoadControl.Builder()
                 .setBufferDurationsMs(50_000, 120_000, 2_500, 5_000)
                 .build()

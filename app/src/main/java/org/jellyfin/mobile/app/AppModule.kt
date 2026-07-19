@@ -35,6 +35,7 @@ import org.jellyfin.mobile.player.cache.TemporaryStreamingCache
 import org.jellyfin.mobile.player.deviceprofile.DeviceProfileBuilder
 import org.jellyfin.mobile.player.interaction.PlayerEvent
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
+import org.jellyfin.mobile.player.network.PlaybackNetworkPolicy
 import org.jellyfin.mobile.player.qualityoptions.QualityOptionsProvider
 import org.jellyfin.mobile.player.source.MediaSourceResolver
 import org.jellyfin.mobile.player.ui.PlayerFragment
@@ -96,6 +97,7 @@ val applicationModule = module {
     single { DeviceProfileBuilder(get()) }
     single { QualityOptionsProvider() }
     single { MediaSegmentRepository() }
+    single { PlaybackNetworkPolicy(androidApplication(), get()) }
 
     // ExoPlayer factories
     single<DatabaseProvider> {

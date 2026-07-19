@@ -60,6 +60,7 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
     private lateinit var backgroundAudioPreference: Preference
     private lateinit var horizontalGesturePreference: Preference
     private lateinit var directPlayAssPreference: Preference
+    private lateinit var meteredPlaybackQualityPreference: Preference
     private lateinit var networkBufferPreference: Preference
     private lateinit var externalPlayerChoicePreference: Preference
     private lateinit var downloadLocationPreference: Preference
@@ -128,6 +129,7 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
                 backgroundAudioPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 horizontalGesturePreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 directPlayAssPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
+                meteredPlaybackQualityPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 networkBufferPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 externalPlayerChoicePreference.enabled = selection == VideoPlayerType.EXTERNAL_PLAYER
             }
@@ -171,6 +173,41 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
         directPlayAssPreference = checkBox(Constants.PREF_EXOPLAYER_DIRECT_PLAY_ASS) {
             titleRes = R.string.pref_exoplayer_direct_play_ass
             summaryRes = R.string.pref_exoplayer_direct_play_ass_summary
+            enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
+        }
+        val meteredPlaybackQualityOptions = listOf(
+            SelectionItem(
+                MeteredPlaybackQuality.AUTO.preferenceValue,
+                R.string.metered_playback_quality_auto,
+                R.string.metered_playback_quality_auto_description,
+            ),
+            SelectionItem(
+                MeteredPlaybackQuality.ORIGINAL.preferenceValue,
+                R.string.metered_playback_quality_original,
+                R.string.metered_playback_quality_original_description,
+            ),
+            SelectionItem(
+                MeteredPlaybackQuality.DATA_SAVER.preferenceValue,
+                R.string.metered_playback_quality_data_saver,
+                R.string.metered_playback_quality_data_saver_description,
+            ),
+            SelectionItem(
+                MeteredPlaybackQuality.BALANCED.preferenceValue,
+                R.string.metered_playback_quality_balanced,
+                R.string.metered_playback_quality_balanced_description,
+            ),
+            SelectionItem(
+                MeteredPlaybackQuality.HIGH.preferenceValue,
+                R.string.metered_playback_quality_high,
+                R.string.metered_playback_quality_high_description,
+            ),
+        )
+        meteredPlaybackQualityPreference = singleChoice(
+            Constants.PREF_METERED_PLAYBACK_QUALITY,
+            meteredPlaybackQualityOptions,
+        ) {
+            titleRes = R.string.pref_metered_playback_quality
+            initialSelection = MeteredPlaybackQuality.AUTO.preferenceValue
             enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
         }
         val networkBufferOptions = listOf(
