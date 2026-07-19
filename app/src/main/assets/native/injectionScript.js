@@ -2,19 +2,10 @@
     const startupStyle = document.createElement('style');
     startupStyle.id = 'zadflix-startup-theme';
     startupStyle.textContent = `
-        @-webkit-keyframes zadflix-loading-spin {
-            from { -webkit-transform: translate(-50%, -50%) rotate(0deg); }
-            to { -webkit-transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes zadflix-loading-spin {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
         .splashLogo {
-            -webkit-animation: zadflix-loading-spin 1s linear infinite !important;
-            animation: zadflix-loading-spin 1s linear infinite !important;
-            background-image: url('/native/zadflix-loading-face.png') !important;
-            transform-origin: center;
+            -webkit-animation: none !important;
+            animation: none !important;
+            background-image: url('/native/zadflix-icon.png') !important;
         }
     `;
     document.head.appendChild(startupStyle);
@@ -31,7 +22,7 @@
         startupStyle.textContent = '.splashLogo { display: none !important; }';
         showWebapp();
     }, { once: true });
-    startupLogo.src = '/native/zadflix-loading-face.png';
+    startupLogo.src = '/native/zadflix-icon.png';
     if (startupLogo.complete) {
         if (startupLogo.naturalWidth > 0) {
             showWebapp();
