@@ -98,13 +98,47 @@ progress[aria-valuenow]::before {
 .mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__trackContainer > .mdl-switch__thumb,
 .mdl-checkbox__input:checked + .mdl-checkbox__label + .mdl-checkbox__box-outline,
 .mdl-radio__inner-circle,
-.mdl-radio__focus-circle,
-.mdl-spinner__layer-1,
-.mdl-spinner__layer-2,
-.mdl-spinner__layer-3,
-.mdl-spinner__layer-4 {
+.mdl-radio__focus-circle {
     border-color: #e50914 !important;
     background-color: #e50914 !important;
+}
+
+.docspinner.mdl-spinner.mdlSpinnerActive {
+    animation: zadflix-face-loading-spin 1s linear infinite !important;
+    background-color: transparent !important;
+    background-image: url('/native/zadflix-loading-face.png') !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: contain !important;
+    will-change: transform;
+}
+
+.docspinner.mdl-spinner > .mdl-spinner__layer {
+    display: none !important;
+}
+
+.swiper-lazy-preloader {
+    animation: zadflix-face-loading-spin 1s linear infinite !important;
+    background: transparent url('/native/zadflix-loading-face.png') center / contain no-repeat !important;
+    border: 0 !important;
+}
+
+.MuiCircularProgress-root.MuiCircularProgress-indeterminate {
+    animation: zadflix-face-loading-spin 1s linear infinite !important;
+    background: transparent url('/native/zadflix-loading-face.png') center / contain no-repeat !important;
+    color: transparent !important;
+}
+
+.MuiCircularProgress-root.MuiCircularProgress-indeterminate svg {
+    visibility: hidden !important;
+}
+
+.osdMediaStatus:not(.hide) .material-icons.animate.autorenew {
+    animation: zadflix-face-loading-spin 1s linear infinite !important;
+    background: transparent url('/native/zadflix-loading-face.png') center / contain no-repeat !important;
+    color: transparent !important;
+    height: 1.5em;
+    width: 1.5em;
 }
 
 a,
@@ -210,7 +244,20 @@ a,
     }
 }
 
+@keyframes zadflix-face-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .docspinner.mdl-spinner.mdlSpinnerActive,
+    .swiper-lazy-preloader,
+    .MuiCircularProgress-root.MuiCircularProgress-indeterminate,
+    .osdMediaStatus:not(.hide) .material-icons.animate.autorenew {
+        animation: none !important;
+    }
+
     .zadflix-library-scan-button[data-state='scanning'] .material-icons {
         animation: none;
     }

@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -53,6 +52,7 @@ import kotlinx.coroutines.launch
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.app.ApiClientController
 import org.jellyfin.mobile.setup.ConnectionHelper
+import org.jellyfin.mobile.ui.content.ZadflixLoadingIndicator
 import org.jellyfin.mobile.ui.state.CheckUrlState
 import org.jellyfin.mobile.ui.state.ServerSelectionMode
 import org.jellyfin.mobile.ui.utils.CenterRow
@@ -202,7 +202,11 @@ private fun AddressSelection(
             )
         } else {
             CenterRow {
-                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                ZadflixLoadingIndicator(
+                    modifier = Modifier
+                        .padding(top = 16.dp, bottom = 8.dp)
+                        .size(48.dp),
+                )
             }
         }
     }
@@ -288,7 +292,7 @@ private fun ServerDiscoveryList(
                     .padding(horizontal = 8.dp),
                 text = stringResource(R.string.available_servers_title),
             )
-            CircularProgressIndicator(
+            ZadflixLoadingIndicator(
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
                     .size(24.dp),
