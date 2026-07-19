@@ -9,6 +9,7 @@ The workstation inspection on 2026-07-19 found:
 - Jellyfin Server 10.11.11 at `/Applications/Jellyfin.app`.
 - A running server responding at `http://127.0.0.1:8096`.
 - A server named `Personal Media` with the setup wizard complete.
+- A macOS login item that starts Jellyfin automatically after the user logs in.
 - A Movies library rooted at `/Users/zadorpataki/Media/Movies`.
 - A TV Shows library rooted at `/Users/zadorpataki/Media/TVShows`.
 - VideoToolbox hardware decoding/encoding and tone mapping enabled on the Apple M2 Pro.

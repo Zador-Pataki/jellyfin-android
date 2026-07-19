@@ -91,3 +91,20 @@ After installation, open the app from the launcher and connect it to the worksta
 ## Current device audit
 
 `adb` is installed and functional on the verified Mac. The audit performed while preparing this guide found no connected Android device, and no APK was installed to a physical device.
+
+## Bring in upstream Jellyfin updates
+
+Keep `origin` pointed at the personal fork and `upstream` pointed at `https://github.com/jellyfin/jellyfin-android.git`. Update without rewriting the personal branch:
+
+```sh
+git status --short
+git fetch upstream
+git switch master
+git merge --ff-only upstream/master
+git push origin master
+git switch codex/personal-media-app
+git merge master
+./scripts/build-android.sh --tests
+```
+
+Stop before switching branches if `git status --short` reports uncommitted work. Resolve merge conflicts and rerun the tests locally before pushing the personal branch.
