@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="fill"
-    android:src="@drawable/zadflix_splash" />
+<animated-rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/zadflix_loading_face"
+    android:pivotX="50%"
+    android:pivotY="50%" />
