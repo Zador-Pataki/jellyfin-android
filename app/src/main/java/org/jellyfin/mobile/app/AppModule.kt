@@ -155,7 +155,7 @@ val applicationModule = module {
             }
     }
 
-    single { TemporaryStreamingCache(get(), get()) }
+    single(createdAtStart = true) { TemporaryStreamingCache(get(), get()) }
     single<CacheDataSource.Factory>(named(STREAMING_CACHE_DATA_SOURCE_FACTORY)) {
         CacheDataSource.Factory()
             .setCache(get<TemporaryStreamingCache>().cache)

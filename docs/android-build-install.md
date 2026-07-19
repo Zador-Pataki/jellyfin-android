@@ -98,7 +98,11 @@ The numeric fallback is `http://100.123.144.13:8096`. Both addresses were verifi
 
 ## Current device audit
 
-`adb` is installed and functional on the verified Mac. The audit performed while preparing this guide found no connected Android device, and no APK was installed to a physical device.
+`adb` is installed and functional on the verified Mac. On 2026-07-19, the `libreDebug` APK was installed and launched successfully on a Samsung Galaxy S23 Ultra (`SM-S918B`) without clearing app data.
+
+The phone was connected over cellular through Tailscale and reached Jellyfin at `100.123.144.13:8096`. The synthetic eight-second movie played in the native player, and Jellyfin recorded a completed 8,000 ms playback session from the phone's private Tailscale address.
+
+During playback, the disposable streaming cache contained two files totaling about 2.6 MiB. After force-stopping and restarting the app, it contained no media payloads (only up to 4 KiB of cache bookkeeping), while the server selection and authenticated session remained available. The app-specific Android battery-optimization exemption was also enabled so playback can continue with the screen off.
 
 ## Bring in upstream Jellyfin updates
 
