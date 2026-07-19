@@ -106,7 +106,7 @@ The phone was connected over cellular through Tailscale and reached Jellyfin at 
 
 During playback, the disposable streaming cache contained two files totaling about 2.6 MiB. After force-stopping and restarting the app, it contained no media payloads (only up to 4 KiB of cache bookkeeping), while the server selection and authenticated session remained available. The app-specific Android battery-optimization exemption was also enabled so playback can continue with the screen off.
 
-The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix Dev` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
+The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
 
 ## Bring in upstream Jellyfin updates
 
