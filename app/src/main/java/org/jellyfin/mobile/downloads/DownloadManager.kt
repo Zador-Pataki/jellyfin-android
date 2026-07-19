@@ -69,7 +69,7 @@ class DownloadManager(
                         userId = user.id,
                         itemId = item.id,
                         item = item,
-                        path = item.name ?: item.id.toString(),
+                        path = buildDownloadPath(server.id, item.id, item.name),
                     )
                     downloadDao.insert(downloadEntity)
                 }
@@ -114,5 +114,10 @@ class DownloadManager(
         }
 
         downloadDao.delete(id)
+
+        // Deleting the active item stops the one shared worker. Ensure any other queued items are not left stranded.
+        if (downloadDao.getQueuedDownloads().isNotEmpty()) {
+            DownloadWorker.start(context, appPreferences)
+        }
     }
 }

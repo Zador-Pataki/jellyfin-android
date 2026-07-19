@@ -71,7 +71,12 @@ class DownloadQueue(
             notificationProgressCallback.onEnd()
             downloadDao.update(downloadWithFiles.download.copy(status = DownloadStatus.DOWNLOADED))
         } catch (_: CancellationException) {
-            downloadDao.update(downloadWithFiles.download.copy(status = DownloadStatus.QUEUED))
+            // Cancellation can be requested explicitly by the user. Do not race that update and resurrect a cancelled
+            // entry as queued; only restore the transient DOWNLOADING state used for worker interruption/replacement.
+            val currentDownload = downloadDao.getDownload(downloadWithFiles.download.id)
+            if (currentDownload?.status == DownloadStatus.DOWNLOADING) {
+                downloadDao.update(currentDownload.copy(status = DownloadStatus.QUEUED))
+            }
         } catch (error: Throwable) {
             downloadDao.update(downloadWithFiles.download.copy(status = DownloadStatus.ERROR))
             throw error

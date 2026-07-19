@@ -11,6 +11,7 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jellyfin.mobile.app.STREAMING_MEDIA_SOURCE_FACTORY
 import org.jellyfin.mobile.data.dao.DownloadDao
 import org.jellyfin.mobile.downloads.DownloadFileType
 import org.jellyfin.mobile.player.PlayerException
@@ -35,6 +36,7 @@ import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import timber.log.Timber
 import java.util.UUID
 import kotlin.time.Duration
@@ -376,8 +378,7 @@ class QueueManager(
             }
         }
 
-        // DefaultMediaSourceFactory
-        val factory = get<MediaSource.Factory>()
+        val factory = get<MediaSource.Factory>(named(STREAMING_MEDIA_SOURCE_FACTORY))
 
         val mediaItem = MediaItem.Builder()
             .setMediaId(source.itemId.toString())

@@ -14,11 +14,8 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ts.TsExtractor
 import androidx.work.WorkManager
@@ -34,6 +31,7 @@ import org.jellyfin.mobile.downloads.DownloadQueue
 import org.jellyfin.mobile.downloads.DownloadsViewModel
 import org.jellyfin.mobile.downloads.FileDownloader
 import org.jellyfin.mobile.events.ActivityEventHandler
+import org.jellyfin.mobile.player.cache.TemporaryStreamingCache
 import org.jellyfin.mobile.player.deviceprofile.DeviceProfileBuilder
 import org.jellyfin.mobile.player.interaction.PlayerEvent
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
@@ -58,6 +56,8 @@ import org.koin.dsl.module
 import java.io.File
 
 const val PLAYER_EVENT_CHANNEL = "PlayerEventChannel"
+const val STREAMING_MEDIA_SOURCE_FACTORY = "StreamingMediaSourceFactory"
+private const val STREAMING_CACHE_DATA_SOURCE_FACTORY = "StreamingCacheDataSourceFactory"
 private const val TS_SEARCH_PACKETS = 1800
 
 val applicationModule = module {
@@ -155,6 +155,14 @@ val applicationModule = module {
             }
     }
 
+    single { TemporaryStreamingCache(get(), get()) }
+    single<CacheDataSource.Factory>(named(STREAMING_CACHE_DATA_SOURCE_FACTORY)) {
+        CacheDataSource.Factory()
+            .setCache(get<TemporaryStreamingCache>().cache)
+            .setUpstreamDataSourceFactory(get<DataSource.Factory>())
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+    }
+
     single<MediaSource.Factory> {
         val context: Context = get()
         val extractorsFactory = DefaultExtractorsFactory().apply {
@@ -167,6 +175,22 @@ val applicationModule = module {
             )
         }
         DefaultMediaSourceFactory(get<CacheDataSource.Factory>(), extractorsFactory)
+    }
+    single<MediaSource.Factory>(named(STREAMING_MEDIA_SOURCE_FACTORY)) {
+        val context: Context = get()
+        val extractorsFactory = DefaultExtractorsFactory().apply {
+            // https://github.com/google/ExoPlayer/issues/8571
+            setTsExtractorTimestampSearchBytes(
+                when {
+                    !context.isLowRamDevice -> TS_SEARCH_PACKETS * TsExtractor.TS_PACKET_SIZE // 3x default
+                    else -> TsExtractor.DEFAULT_TIMESTAMP_SEARCH_BYTES
+                },
+            )
+        }
+        DefaultMediaSourceFactory(
+            get<CacheDataSource.Factory>(named(STREAMING_CACHE_DATA_SOURCE_FACTORY)),
+            extractorsFactory,
+        )
     }
 
     single(createdAtStart = true) { StorageManager(get(), get()) }

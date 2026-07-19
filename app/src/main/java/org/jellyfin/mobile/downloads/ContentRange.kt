@@ -9,13 +9,17 @@ data class ContentRange(
         fun fromContentLengthHeader(input: String): ContentRange {
             val value = input.toLongOrNull()
             requireNotNull(value) { "Invalid content length $input" }
+            require(value >= 0) { "Content length cannot be negative: $input" }
 
-            return ContentRange(0, value, value)
+            return ContentRange(0, (value - 1).coerceAtLeast(0), value)
         }
 
         fun fromContentRangeHeader(input: String): ContentRange {
             val parts = input.split(" ")
             if (parts.size != 2) error("Invalid formatted content range $input")
+            require(parts[0].equals("bytes", ignoreCase = true)) {
+                "Unsupported content range unit in $input"
+            }
 
             val rangeAndTotal = parts[1].split("/")
 
@@ -37,6 +41,11 @@ data class ContentRange(
 
             requireNotNull(start) { "Start is missing in content range $input" }
             requireNotNull(end) { "End is missing in content range $input" }
+            require(total >= 0) { "Total size cannot be negative in content range $input" }
+            require(start >= 0 && end >= start) { "Invalid byte range in content range $input" }
+            if (rangePart != "*") {
+                require(end < total) { "Byte range exceeds total size in content range $input" }
+            }
 
             return ContentRange(start, end, total)
         }

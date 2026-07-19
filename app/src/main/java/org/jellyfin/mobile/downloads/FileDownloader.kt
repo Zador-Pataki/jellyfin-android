@@ -2,6 +2,7 @@ package org.jellyfin.mobile.downloads
 
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.system.Os
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -49,11 +50,15 @@ class FileDownloader(
 
         val response = okHttpClient.newCall(request).await()
 
-        // 416 (Requested Range Not Satisfiable) can happen when we've already fully downloaded the file
+        // 416 (Requested Range Not Satisfiable) can happen when we've already fully downloaded the file. An oversized
+        // local file is not complete: it may contain stale bytes from an older version and must be restarted instead.
         if (response.code == 416 && rangeStart != null && rangeStart >= response.getContentRange().total) return response
 
         // Throw for other unsuccessful responses
-        if (!response.isSuccessful) throw IOException("Unexpected response $response")
+        if (!response.isSuccessful) {
+            response.close()
+            throw IOException("Unexpected response $response")
+        }
 
         return response
     }
@@ -108,6 +113,16 @@ class FileDownloader(
 
                     progressCallback.onProgress(totalRead, contentRange.total)
                 }
+
+                if (totalRead != contentRange.total) {
+                    throw IOException(
+                        "Incomplete response: wrote $totalRead of ${contentRange.total} bytes",
+                    )
+                }
+
+                // A server may ignore the Range header and respond with the full file. Truncate only after the full
+                // response is written so stale trailing bytes cannot make an older, larger file look valid.
+                output.channel.truncate(contentRange.total)
             }
         }
     }
@@ -118,8 +133,35 @@ class FileDownloader(
         to: ParcelFileDescriptor,
         progressCallback: ProgressCallback = ProgressCallback.Empty,
     ) {
-        val rangeStart = to.statSize
-        val response = download(api, from, rangeStart)
-        save(response, to, progressCallback)
+        try {
+            // Some document providers cannot report a size and return -1. In that case, safely restart at byte zero.
+            val rangeStart = to.statSize.coerceAtLeast(0)
+            var response = download(api, from, rangeStart)
+
+            if (response.code == 416) {
+                val total = response.getContentRange().total
+                response.close()
+
+                if (rangeStart == total) {
+                    progressCallback.onProgress(total, total)
+                    to.close()
+                    return
+                }
+
+                // The local file is longer than the current remote file. Its prefix cannot be verified without an ETag,
+                // so discard it and restart instead of incorrectly accepting it as a completed download.
+                Os.ftruncate(to.fileDescriptor, 0)
+                response = download(api, from, 0)
+            }
+
+            response.use {
+                save(it, to, progressCallback)
+            }
+        } catch (error: Throwable) {
+            runCatching { to.close() }
+                .exceptionOrNull()
+                ?.let(error::addSuppressed)
+            throw error
+        }
     }
 }
