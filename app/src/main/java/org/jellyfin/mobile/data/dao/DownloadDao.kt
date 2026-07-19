@@ -35,6 +35,19 @@ interface DownloadDao {
     @Query("SELECT * FROM download WHERE item_id = :itemId LIMIT 1")
     fun getDownloadWithFilesByItemId(itemId: UUID): DownloadFiles?
 
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM download
+        WHERE server_id = :serverId AND user_id = :userId AND item_id IN (:itemIds)
+        """
+    )
+    fun getDownloadsWithFiles(
+        serverId: Long,
+        userId: Long,
+        itemIds: Collection<UUID>,
+    ): List<DownloadFiles>
+
     @Query("SELECT * FROM download WHERE id = :id")
     suspend fun getDownload(id: Long): DownloadEntity?
 

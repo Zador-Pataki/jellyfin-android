@@ -66,7 +66,21 @@
     const movieCardSelector = '.card[data-id][data-type="Movie"][data-mediatype="Video"]';
     const videoCardSelector = '.card[data-id][data-mediatype="Video"]';
     const downloadButtonSelector = '.zadflix-card-download';
+    const pendingDownloadStates = new Set(['QUEUED', 'DOWNLOADING']);
+    const absentDownloadStates = new Set(['', 'NONE', 'ABSENT', 'NOT_DOWNLOADED', 'ERROR', 'CANCELLED']);
+    const stateRefreshIntervalMs = 5000;
+    const stateQueryThrottleMs = 250;
+    const pendingDownloadFeedbackTimeoutMs = 30 * 1000;
+    const pendingDeletionTimeoutMs = 10 * 1000;
+    const downloadWatchTimeoutMs = 12 * 60 * 60 * 1000;
+
+    const downloadStates = new Map();
+    const pendingActions = new Map();
+    const watchedDownloads = new Map();
     let reconciliationScheduled = false;
+    let forceStateRefresh = true;
+    let lastStateQueryAt = 0;
+    let stateRefreshTimer;
 
     function movieName(card) {
         return card.querySelector('.textActionButton')?.textContent?.trim()
@@ -74,14 +88,174 @@
             || 'movie';
     }
 
-    function resetDownloadButton(button, card) {
-        const name = movieName(card);
+    function setButtonIcon(button, iconName) {
+        const icon = button.querySelector('.material-icons');
+        if (icon) icon.className = `material-icons ${iconName}`;
+    }
+
+    function setButtonChecking(button, card) {
         button.dataset.itemId = card.dataset.id;
-        button.dataset.state = 'idle';
-        button.disabled = false;
-        button.title = `Download ${name}`;
-        button.setAttribute('aria-label', `Download ${name}`);
-        button.querySelector('.material-icons')?.classList.replace('download_done', 'download');
+        button.dataset.action = 'checking';
+        button.dataset.state = 'checking';
+        button.disabled = true;
+        button.title = `Checking download for ${movieName(card)}`;
+        button.setAttribute('aria-label', button.title);
+        button.setAttribute('aria-busy', 'true');
+        setButtonIcon(button, 'downloading');
+    }
+
+    function normalizeDownloadState(value) {
+        if (value === true) return 'DOWNLOADED';
+        if (value === false || value == null) return 'NONE';
+
+        if (typeof value === 'string') return value.toUpperCase();
+        if (typeof value !== 'object') return 'NONE';
+
+        const status = value.status ?? value.state ?? value.downloadStatus;
+        if (typeof status === 'string') return status.toUpperCase();
+        if (value.downloaded === true) return 'DOWNLOADED';
+        if (value.present === true || value.exists === true) return 'DOWNLOADED';
+        return 'NONE';
+    }
+
+    function parseDownloadStates(rawStates, itemIds) {
+        let parsedStates = rawStates;
+        if (typeof rawStates === 'string') parsedStates = JSON.parse(rawStates);
+
+        const states = new Map(itemIds.map(itemId => [itemId, 'NONE']));
+        if (Array.isArray(parsedStates)) {
+            parsedStates.forEach(entry => {
+                if (typeof entry === 'string') {
+                    if (states.has(entry)) states.set(entry, 'DOWNLOADED');
+                    return;
+                }
+
+                const itemId = entry?.itemId ?? entry?.id;
+                if (states.has(itemId)) states.set(itemId, normalizeDownloadState(entry));
+            });
+        } else if (parsedStates && typeof parsedStates === 'object') {
+            itemIds.forEach(itemId => {
+                if (Object.prototype.hasOwnProperty.call(parsedStates, itemId)) {
+                    states.set(itemId, normalizeDownloadState(parsedStates[itemId]));
+                }
+            });
+        }
+
+        return states;
+    }
+
+    function isDownloaded(state) {
+        return state === 'DOWNLOADED';
+    }
+
+    function isDownloadPending(state) {
+        return pendingDownloadStates.has(state);
+    }
+
+    function renderDownloadButton(button, card) {
+        const itemId = card.dataset.id;
+        const name = movieName(card);
+        const state = downloadStates.get(itemId);
+        const pendingAction = pendingActions.get(itemId);
+
+        button.dataset.itemId = itemId;
+        if (!state) {
+            setButtonChecking(button, card);
+            return;
+        }
+
+        if (pendingAction) {
+            const deleting = pendingAction.action === 'delete';
+            button.dataset.action = deleting ? 'delete' : 'download';
+            button.dataset.state = deleting ? 'deleting' : 'requesting';
+            button.disabled = true;
+            button.title = deleting ? `Waiting to remove ${name}` : `Download requested for ${name}`;
+            button.setAttribute('aria-label', button.title);
+            button.setAttribute('aria-busy', 'true');
+            setButtonIcon(button, deleting ? 'delete' : 'downloading');
+            return;
+        }
+
+        button.removeAttribute('aria-busy');
+        if (isDownloaded(state)) {
+            button.dataset.action = 'delete';
+            button.dataset.state = 'downloaded';
+            button.disabled = false;
+            button.title = `Delete downloaded ${name}`;
+            button.setAttribute('aria-label', button.title);
+            setButtonIcon(button, 'delete');
+        } else if (isDownloadPending(state)) {
+            button.dataset.action = 'download';
+            button.dataset.state = state.toLowerCase();
+            button.disabled = true;
+            button.title = `Downloading ${name}`;
+            button.setAttribute('aria-label', button.title);
+            button.setAttribute('aria-busy', 'true');
+            setButtonIcon(button, 'downloading');
+        } else {
+            button.dataset.action = 'download';
+            button.dataset.state = absentDownloadStates.has(state) ? 'idle' : state.toLowerCase();
+            button.disabled = false;
+            button.title = `Download ${name}`;
+            button.setAttribute('aria-label', button.title);
+            setButtonIcon(button, 'download');
+        }
+    }
+
+    function renderItemButtons(itemId) {
+        document.querySelectorAll(movieCardSelector).forEach(card => {
+            if (card.dataset.id !== itemId) return;
+            const button = card.querySelector(`.cardScalable > ${downloadButtonSelector}`);
+            if (button) renderDownloadButton(button, card);
+        });
+    }
+
+    function readNativeDownloadStates(itemIds) {
+        const downloadsBridge = window.ZadflixDownloads;
+        if (typeof downloadsBridge?.getStates !== 'function') {
+            return new Map(itemIds.map(itemId => [itemId, 'NONE']));
+        }
+
+        return parseDownloadStates(downloadsBridge.getStates(JSON.stringify(itemIds)), itemIds);
+    }
+
+    function reconcilePendingActions(now) {
+        pendingActions.forEach((pendingAction, itemId) => {
+            const state = downloadStates.get(itemId) ?? 'NONE';
+            const timeout = pendingAction.action === 'delete'
+                ? pendingDeletionTimeoutMs
+                : pendingDownloadFeedbackTimeoutMs;
+            const timedOut = now - pendingAction.startedAt >= timeout;
+            const downloadAccepted = pendingAction.action === 'download'
+                && (isDownloadPending(state) || isDownloaded(state));
+            const deletionFinished = pendingAction.action === 'delete' && !isDownloaded(state);
+
+            if (timedOut || downloadAccepted || deletionFinished) pendingActions.delete(itemId);
+        });
+
+        watchedDownloads.forEach((startedAt, itemId) => {
+            if (isDownloaded(downloadStates.get(itemId)) || now - startedAt >= downloadWatchTimeoutMs) {
+                watchedDownloads.delete(itemId);
+            }
+        });
+    }
+
+    function scheduleStateRefresh() {
+        window.clearTimeout(stateRefreshTimer);
+        const visibleItemIds = new Set(
+            [...document.querySelectorAll(movieCardSelector)].map(card => card.dataset.id).filter(Boolean),
+        );
+        const shouldRefresh = [...visibleItemIds].some(itemId =>
+            pendingActions.has(itemId)
+            || watchedDownloads.has(itemId)
+            || isDownloadPending(downloadStates.get(itemId)),
+        );
+        if (!shouldRefresh) return;
+
+        stateRefreshTimer = window.setTimeout(() => {
+            forceStateRefresh = true;
+            scheduleMovieCardReconciliation();
+        }, stateRefreshIntervalMs);
     }
 
     function reconcileMovieCards() {
@@ -95,7 +269,9 @@
             const cardScalable = card.querySelector('.cardScalable');
             if (!cardScalable) return;
 
-            let button = cardScalable.querySelector(downloadButtonSelector);
+            const buttons = [...cardScalable.children].filter(child => child.matches?.(downloadButtonSelector));
+            let button = buttons.shift();
+            buttons.forEach(duplicateButton => duplicateButton.remove());
             if (!button) {
                 button = document.createElement('button');
                 button.type = 'button';
@@ -105,28 +281,40 @@
             }
 
             if (button.dataset.itemId !== card.dataset.id) {
-                resetDownloadButton(button, card);
+                setButtonChecking(button, card);
             }
         });
+
+        const cards = [...document.querySelectorAll(movieCardSelector)];
+        const itemIds = [...new Set(cards.map(card => card.dataset.id).filter(Boolean))];
+        const now = Date.now();
+        const missingState = itemIds.some(itemId => !downloadStates.has(itemId));
+        if (itemIds.length && (forceStateRefresh || missingState || now - lastStateQueryAt >= stateQueryThrottleMs)) {
+            try {
+                const currentStates = readNativeDownloadStates(itemIds);
+                itemIds.forEach(itemId => downloadStates.set(itemId, currentStates.get(itemId) ?? 'NONE'));
+                lastStateQueryAt = now;
+                forceStateRefresh = false;
+                reconcilePendingActions(now);
+            } catch (error) {
+                console.error('Zadflix could not read native download state.', error);
+                itemIds.forEach(itemId => {
+                    if (!downloadStates.has(itemId)) downloadStates.set(itemId, 'NONE');
+                });
+            }
+        }
+
+        cards.forEach(card => {
+            const button = card.querySelector(`.cardScalable > ${downloadButtonSelector}`);
+            if (button) renderDownloadButton(button, card);
+        });
+        scheduleStateRefresh();
     }
 
     function scheduleMovieCardReconciliation() {
         if (reconciliationScheduled) return;
         reconciliationScheduled = true;
         window.requestAnimationFrame(reconcileMovieCards);
-    }
-
-    function showDownloadRequested(button, itemId) {
-        button.dataset.state = 'requested';
-        button.disabled = true;
-        button.title = 'Download requested';
-        button.setAttribute('aria-label', 'Download requested');
-        button.querySelector('.material-icons')?.classList.replace('download', 'download_done');
-
-        window.setTimeout(() => {
-            const card = button.closest(movieCardSelector);
-            if (card?.dataset.id === itemId) resetDownloadButton(button, card);
-        }, 2500);
     }
 
     document.addEventListener('click', event => {
@@ -138,15 +326,24 @@
 
             event.preventDefault();
             event.stopImmediatePropagation();
-            if (downloadButton.dataset.state === 'requested') return;
+            if (downloadButton.disabled || pendingActions.has(itemId)) return;
 
             try {
-                const accepted = window.NativeInterface?.downloadFiles(JSON.stringify([{ itemId }]));
-                if (accepted !== true) throw new Error('The Android download request was rejected.');
-                showDownloadRequested(downloadButton, itemId);
+                const action = downloadButton.dataset.action;
+                const accepted = action === 'delete'
+                    ? window.ZadflixDownloads?.requestDeletion(itemId)
+                    : window.NativeInterface?.downloadFiles(JSON.stringify([{ itemId }]));
+                if (accepted !== true) throw new Error(`The Android ${action} request was rejected.`);
+
+                pendingActions.set(itemId, { action, startedAt: Date.now() });
+                if (action === 'download') watchedDownloads.set(itemId, Date.now());
+                renderItemButtons(itemId);
+                forceStateRefresh = true;
+                scheduleStateRefresh();
             } catch (error) {
-                console.error('Zadflix could not request this download.', error);
-                resetDownloadButton(downloadButton, card);
+                console.error('Zadflix could not change this download.', error);
+                pendingActions.delete(itemId);
+                renderDownloadButton(downloadButton, card);
             }
             return;
         }
@@ -174,15 +371,43 @@
         playButton.click();
     }, true);
 
-    const observer = new MutationObserver(scheduleMovieCardReconciliation);
+    const observer = new MutationObserver(mutations => {
+        if (mutations.some(mutation => mutation.type === 'attributes')) forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
     observer.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-id', 'data-mediatype', 'data-type'],
         childList: true,
         subtree: true,
     });
-    window.addEventListener('hashchange', scheduleMovieCardReconciliation);
-    window.addEventListener('pageshow', scheduleMovieCardReconciliation);
+    window.addEventListener('hashchange', () => {
+        forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
+    window.addEventListener('pageshow', () => {
+        forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
+    window.addEventListener('focus', () => {
+        forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
+    window.addEventListener('zadflix-download-state-changed', event => {
+        const itemId = event.detail?.itemId;
+        if (itemId) {
+            downloadStates.delete(itemId);
+            pendingActions.delete(itemId);
+            watchedDownloads.delete(itemId);
+        }
+        forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') return;
+        forceStateRefresh = true;
+        scheduleMovieCardReconciliation();
+    });
     scheduleMovieCardReconciliation();
 })();
 

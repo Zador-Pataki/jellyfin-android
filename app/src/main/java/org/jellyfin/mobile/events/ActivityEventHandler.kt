@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.jellyfin.mobile.MainActivity
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.bridge.JavascriptCallback
+import org.jellyfin.mobile.downloads.DownloadManager
 import org.jellyfin.mobile.downloads.DownloadsFragment
 import org.jellyfin.mobile.player.ui.PlayerFragment
 import org.jellyfin.mobile.player.ui.PlayerFullscreenHelper
@@ -22,6 +24,7 @@ import org.jellyfin.mobile.utils.Constants
 import org.jellyfin.mobile.utils.extensions.addFragment
 import org.jellyfin.mobile.utils.requestDownload
 import org.jellyfin.mobile.webapp.WebappFunctionChannel
+import org.koin.android.ext.android.get
 import timber.log.Timber
 
 class ActivityEventHandler(
@@ -79,6 +82,30 @@ class ActivityEventHandler(
                     with(event) { requestDownload(itemIds) }
                 }
             }
+            is ActivityEvent.ConfirmDownloadDeletion -> {
+                fun refreshDownloadButton() {
+                    webappFunctionChannel.call(
+                        """
+                        window.dispatchEvent(new CustomEvent('zadflix-download-state-changed', {
+                            detail: { itemId: '${event.itemId}' }
+                        }));
+                        """.trimIndent(),
+                    )
+                }
+
+                AlertDialog.Builder(this).apply {
+                    setTitle(R.string.zadflix_download_delete_title)
+                    setMessage(getString(R.string.zadflix_download_delete_message, event.displayName))
+                    setPositiveButton(R.string.zadflix_download_delete_confirm) { _, _ ->
+                        lifecycleScope.launch {
+                            get<DownloadManager>().delete(event.downloadId, deleteFiles = true)
+                            refreshDownloadButton()
+                        }
+                    }
+                    setNegativeButton(R.string.download_cancel) { _, _ -> refreshDownloadButton() }
+                    setOnCancelListener { refreshDownloadButton() }
+                }.show()
+            }
             ActivityEvent.OpenDownloads -> {
                 supportFragmentManager.addFragment<DownloadsFragment>()
             }
@@ -117,7 +144,5 @@ class ActivityEventHandler(
         }
     }
 
-    fun emit(event: ActivityEvent) {
-        eventsFlow.tryEmit(event)
-    }
+    fun emit(event: ActivityEvent): Boolean = eventsFlow.tryEmit(event)
 }

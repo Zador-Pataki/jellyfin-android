@@ -31,6 +31,7 @@ import org.jellyfin.mobile.bridge.MediaSegments
 import org.jellyfin.mobile.bridge.NativeInterface
 import org.jellyfin.mobile.bridge.NativePlayer
 import org.jellyfin.mobile.bridge.OfflinePlaybackInterface
+import org.jellyfin.mobile.bridge.ZadflixDownloadBridge
 import org.jellyfin.mobile.bridge.ZadflixStartupInterface
 import org.jellyfin.mobile.data.entity.ServerEntity
 import org.jellyfin.mobile.databinding.FragmentWebviewBinding
@@ -50,8 +51,10 @@ import org.jellyfin.mobile.utils.fadeIn
 import org.jellyfin.mobile.utils.isOutdated
 import org.jellyfin.mobile.utils.requestNoBatteryOptimizations
 import org.jellyfin.mobile.utils.runOnUiThread
+import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import org.koin.core.parameter.parametersOf
 
 class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClient.FileChooserListener {
     val appPreferences: AppPreferences by inject()
@@ -61,6 +64,7 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
     private lateinit var jellyfinWebViewClient: JellyfinWebViewClient
     private val nativePlayer: NativePlayer by inject()
     private val offlinePlaybackInterface: OfflinePlaybackInterface by inject()
+    private lateinit var zadflixDownloadBridge: ZadflixDownloadBridge
     private lateinit var externalPlayer: ExternalPlayer
     private val mediaSegments: MediaSegments by inject()
 
@@ -89,6 +93,12 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
         super.onCreate(savedInstanceState)
         server = requireNotNull(requireArguments().getParcelableCompat(FRAGMENT_WEB_VIEW_EXTRA_SERVER)) {
             "Server entity has not been supplied!"
+        }
+        zadflixDownloadBridge = get {
+            parametersOf(
+                server.id,
+                { mainViewModel.userState.value.user?.id },
+            )
         }
 
         assetsPathHandler = AssetsPathHandler(requireContext())
@@ -199,6 +209,7 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
         )
         addJavascriptInterface(nativePlayer, "NativePlayer")
         addJavascriptInterface(offlinePlaybackInterface, "ZadflixOfflinePlayback")
+        addJavascriptInterface(zadflixDownloadBridge, "ZadflixDownloads")
         addJavascriptInterface(externalPlayer, "ExternalPlayer")
         addJavascriptInterface(mediaSegments, "MediaSegments")
 

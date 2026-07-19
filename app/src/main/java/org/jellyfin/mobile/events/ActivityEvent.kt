@@ -9,6 +9,11 @@ sealed class ActivityEvent {
     class LaunchNativePlayer(val playOptions: PlayOptions) : ActivityEvent()
     class OpenUrl(val uri: String, val grantReadPermission: Boolean = false) : ActivityEvent()
     class DownloadItems(val itemIds: Collection<UUID>) : ActivityEvent()
+    class ConfirmDownloadDeletion(
+        val downloadId: Long,
+        val itemId: UUID,
+        val displayName: String,
+    ) : ActivityEvent()
     class CastMessage(val action: String, val args: JSONArray) : ActivityEvent()
     data object RequestBluetoothPermission : ActivityEvent()
     data object OpenSettings : ActivityEvent()

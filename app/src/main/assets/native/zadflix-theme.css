@@ -234,8 +234,21 @@ a,
     background: #e50914 !important;
 }
 
-.zadflix-card-download[data-state='requested'] {
+.zadflix-card-download[data-state='requesting'],
+.zadflix-card-download[data-state='queued'],
+.zadflix-card-download[data-state='downloading'] {
     background: #238636 !important;
+}
+
+.zadflix-card-download[data-action='delete']:focus,
+.zadflix-card-download[data-action='delete']:hover {
+    background: #c11119 !important;
+}
+
+.zadflix-card-download[data-state='checking'],
+.zadflix-card-download[data-state='deleting'] {
+    cursor: wait;
+    opacity: 0.82;
 }
 
 @keyframes zadflix-library-scan-spin {
