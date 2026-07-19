@@ -67,7 +67,7 @@
     <string name="notification_action_rewind">Превъртане назад</string>
     <string name="notification_action_previous">Предишни</string>
     <string name="music_notification_channel_description">Използва се за контрол на възпроизвеждането на музика</string>
-    <string name="music_notification_channel">Джелифин музикален плейър</string>
+    <string name="music_notification_channel">Zadflix музикален плейър</string>
     <string name="media_service_car_item_no_title">Без заглавие</string>
     <string name="media_service_car_section_genres">Жанрове</string>
     <string name="media_service_car_section_songs">Песни</string>
@@ -105,7 +105,7 @@
     <string name="downloads">Изтегляния</string>
     <string name="yes">Да</string>
     <string name="no">Не</string>
-    <string name="bluetooth_permission_message">За да открие кога безжичните слушалки или високоговорители са изключени, приложението изисква достъп до Bluetooth. На Андроид това разрешение е описано като достъп до устройства наблизо и предупреждава, че Bluetooth устройства могат да бъдат използвани за определяне на текущото местоположение. Приложението Джелифин обаче никога няма да използва това разрешение, за да открие вашето местоположение.</string>
+    <string name="bluetooth_permission_message">За да открие кога безжичните слушалки или високоговорители са изключени, приложението изисква достъп до Bluetooth. На Андроид това разрешение е описано като достъп до устройства наблизо и предупреждава, че Bluetooth устройства могат да бъдат използвани за определяне на текущото местоположение. Приложението Zadflix обаче никога няма да използва това разрешение, за да открие вашето местоположение.</string>
     <string name="wifi_only_summary">Медийните файлове ще бъдат изтеглени само през WiFi.</string>
     <string name="mobile_data_and_roaming_summary">Медийните файлове ще бъдат изтеглени през WiFi, мобилни мрежи, дори и в роуминг.</string>
     <string name="menu_item_auto">Автоматично</string>

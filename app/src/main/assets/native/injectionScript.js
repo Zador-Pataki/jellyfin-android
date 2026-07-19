@@ -1,4 +1,10 @@
 (() => {
+    const themeStylesheet = document.createElement('link');
+    themeStylesheet.id = 'zadflix-theme';
+    themeStylesheet.rel = 'stylesheet';
+    themeStylesheet.href = '/native/zadflix-theme.css';
+    document.head.appendChild(themeStylesheet);
+
     const scripts = [
         '/native/nativeshell.js',
         '/native/EventEmitter.js',

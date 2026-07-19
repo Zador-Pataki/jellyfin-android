@@ -83,7 +83,8 @@ fun WebSettings.applyDefault() {
  * @see WebViewAssetLoader.AssetsPathHandler.handle
  */
 fun WebViewAssetLoader.AssetsPathHandler.inject(path: String): WebResourceResponse? = handle(path)?.apply {
-    if (path.endsWith(".js", ignoreCase = true)) {
-        mimeType = "application/javascript"
+    when {
+        path.endsWith(".js", ignoreCase = true) -> mimeType = "application/javascript"
+        path.endsWith(".css", ignoreCase = true) -> mimeType = "text/css"
     }
 }

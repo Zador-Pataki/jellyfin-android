@@ -8,15 +8,15 @@ The workstation inspection on 2026-07-19 found:
 
 - Jellyfin Server 10.11.11 at `/Applications/Jellyfin.app`.
 - A running server responding at `http://127.0.0.1:8096`.
-- A server named `Personal Media` with the setup wizard complete.
+- A server named `Zadflix` with the setup wizard complete.
 - A macOS login item that starts Jellyfin automatically after the user logs in.
-- A Movies library rooted at `/Users/zadorpataki/Media/Movies`.
-- A TV Shows library rooted at `/Users/zadorpataki/Media/TVShows`.
+- A Movies library rooted at `/Users/zadorpataki/Zadflix/Moviesa`.
+- A TV Shows library rooted at `/Users/zadorpataki/Zadflix/TVShows`.
 - VideoToolbox hardware decoding/encoding and tone mapping enabled on the Apple M2 Pro.
 - Tailscale private remote access enabled and verified at `100.123.144.13`; UPnP remains disabled, so Jellyfin does not request a public router port mapping.
 - `$HOME/Movies` contains media files alongside DaVinci Resolve and Apple TV-managed folders. It should not be selected wholesale as a Jellyfin movie library.
 
-Existing files under `$HOME/Movies` were not moved or renamed. A small synthetic test movie was generated at `/Users/zadorpataki/Media/Movies/TV App Test (2026)` to verify scanning and byte-range streaming; it may be removed after phone testing.
+Existing files under `$HOME/Movies` were not moved or renamed. A small synthetic test movie is stored at `/Users/zadorpataki/Zadflix/Moviesa/TV App Test (2026)` to verify scanning and byte-range streaming; it may be removed after phone testing.
 
 ## Start and verify on macOS
 
@@ -57,14 +57,14 @@ Example placeholders for a disk attached to the workstation:
 /Volumes/<media-disk>/Media/TV Shows
 ```
 
-Example placeholders for workstation-local storage:
+The configured workstation-local roots are:
 
 ```text
-$HOME/Media/Movies
-$HOME/Media/TV Shows
+/Users/zadorpataki/Zadflix/Moviesa
+/Users/zadorpataki/Zadflix/TVShows
 ```
 
-These are examples only. Do not create them or copy files into them unless that is the user's chosen storage plan. In particular, do not repurpose `$HOME/Movies` without reviewing its current Apple TV and video-editing contents.
+The `Moviesa` spelling is the configured path and should not be silently corrected or renamed. Do not copy files into either root without reviewing the user's intended media placement. In particular, do not repurpose `$HOME/Movies` without reviewing its current Apple TV and video-editing contents.
 
 Inspect a proposed library path without modifying it:
 
@@ -110,7 +110,7 @@ Prefer the MagicDNS name because it remains readable and avoids copying the nume
 
 1. Install Tailscale from Google Play and sign in to the same `zadorpataki14@gmail.com` tailnet.
 2. Confirm that Tailscale shows the phone as connected.
-3. Open Personal Media and add `http://zadors-macbook-pro.tailce1ef2.ts.net:8096` as the server.
+3. Open Zadflix and add `http://zadors-macbook-pro.tailce1ef2.ts.net:8096` as the server.
 4. Sign in with the Jellyfin administrator username and the password stored in the Mac's Keychain.
 
 The `http` URL is carried inside Tailscale's encrypted tunnel; port 8096 is not forwarded through the router. The workstation must remain awake with Jellyfin and Tailscale running. Verify either address from the Mac with:

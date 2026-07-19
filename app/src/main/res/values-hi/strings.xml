@@ -16,7 +16,7 @@
 \nकृपया होस्टनाम और अपना नेटवर्क कनेक्शन जांचें।</string>
     <string name="mobile_data_and_roaming_summary">मीडिया को WiFi, मोबाइल और रोमिंग नेटवर्क पर डाउनलोड किया जाएगा।</string>
     <string name="pref_exoplayer_allow_background_audio_summary">केवल ऑडियो के साथ पृष्ठभूमि में वीडियो चलाने की अनुमति दें</string>
-    <string name="bluetooth_permission_message">वायरलेस हेडफ़ोन या स्पीकर के डिस्कनेक्ट होने का पता लगाने के लिए, ऐप को ब्लूटूथ एक्सेस की आवश्यकता पड़ती है। एंड्रॉयड पर, इस अनुमति को एक्सेस टू Nearby Devices के रूप में वर्णित किया जाता है, और चेतावनी दी जाती है कि ब्लूटूथ डिवाइस का उपयोग वर्तमान स्थान का अनुमान लगाने के लिए किया जा सकता है। हालाँकि, जेलिफ़िन ऐप आपके स्थान का पता लगाने के लिए इस अनुमति का उपयोग कभी नहीं करेगा।</string>
+    <string name="bluetooth_permission_message">वायरलेस हेडफ़ोन या स्पीकर के डिस्कनेक्ट होने का पता लगाने के लिए, ऐप को ब्लूटूथ एक्सेस की आवश्यकता पड़ती है। एंड्रॉयड पर, इस अनुमति को एक्सेस टू Nearby Devices के रूप में वर्णित किया जाता है, और चेतावनी दी जाती है कि ब्लूटूथ डिवाइस का उपयोग वर्तमान स्थान का अनुमान लगाने के लिए किया जा सकता है। हालाँकि, Zadflix ऐप आपके स्थान का पता लगाने के लिए इस अनुमति का उपयोग कभी नहीं करेगा।</string>
     <string name="network_message">क्या आप मोबाइल डेटा या रोमिंग नेटवर्क पर डाउनलोड करने की अनुमति देना चाहते हैं? आपके प्रोवाइडर द्वारा शुल्क लागू हो सकते हैं। आप बाद में सेटिंग से इस विकल्प को बदल सकते हैं।</string>
     <string name="pref_music_notification_always_dismissible_title">खारिज करने योग्य प्लेयर नोटिफिकेशन</string>
     <string name="external_player_not_supported_yet">चयनित बाहरी प्लेयर में प्लेबैक ट्रैकिंग अभी तक समर्थित नहीं है। इसका समर्थन जोड़ने का प्रयास करने के लिए डेवलपर्स से संपर्क करें।</string>
@@ -55,7 +55,7 @@
     <string name="media_service_car_section_songs">गाने</string>
     <string name="media_service_car_section_genres">शैली</string>
     <string name="media_service_car_item_no_title">कोई शीर्षक नहीं</string>
-    <string name="music_notification_channel">जेलिफ़िन संगीत प्लेयर</string>
+    <string name="music_notification_channel">Zadflix संगीत प्लेयर</string>
     <string name="music_notification_channel_description">संगीत प्लेबैक नियंत्रण के लिए उपयोग किया जाता है</string>
     <string name="notification_action_previous">पिछला</string>
     <string name="notification_action_rewind">रिवाइंड</string>
@@ -81,7 +81,7 @@
     <string name="external_player_invalid_play_method">चलाने का अमान्य तरीका।</string>
     <string name="external_player_invalid_player">कोई वैध बाहरी प्लेयर चयनित नहीं। प्लेबैक ट्रैकिंग अक्षम।</string>
     <string name="external_player_unknown_error">बाहरी प्लेयर में अज्ञात त्रुटि। प्लेबैक ट्रैकिंग अक्षम।</string>
-    <string name="activity_name_settings">जेलिफ़िन की सेटिंग</string>
+    <string name="activity_name_settings">Zadflix की सेटिंग</string>
     <string name="pref_category_music_player">संगीत प्लेयर</string>
     <string name="pref_music_notification_always_dismissible_summary_on">नोटिफिकेशन को हमेशा खारिज किया जा सकता है, यहां तक कि मीडिया चलाते समय भी</string>
     <string name="pref_category_video_player">वीडियो प्लेयर</string>

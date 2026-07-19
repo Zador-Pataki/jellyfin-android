@@ -2,6 +2,17 @@
 
 Good names let Jellyfin match metadata reliably without changing the media itself. The layouts below are targets and examples, not instructions to move existing files without review.
 
+## Configured library roots
+
+The workstation's existing Jellyfin libraries are configured at these exact paths:
+
+```text
+Movies:   /Users/zadorpataki/Zadflix/Moviesa
+TV Shows: /Users/zadorpataki/Zadflix/TVShows
+```
+
+`Moviesa` is intentional. Keep these roots stable unless the user explicitly chooses another storage layout; moving media without updating Jellyfin leaves library entries unavailable.
+
 ## Movies
 
 Use one folder per movie and include the release year when known:

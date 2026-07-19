@@ -18,7 +18,7 @@
     <string name="player_error_invalid_play_options">ಪ್ಲೇಬ್ಯಾಕ್ ಮಾಹಿತಿಯನ್ನು ಪರಿಹರಿಸಲಾಗುತ್ತಿಲ್ಲ</string>
     <string name="bluetooth_permission_continue">ಮುಂದುವರೆಸು</string>
     <string name="player_error_unsupported_content">ಈ ಸಾಧನದಿಂದ ಮೀಡಿಯಾವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</string>
-    <string name="music_notification_channel">ಜೆಲ್ಲಿಫಿನ್ ಮ್ಯೂಸಿಕ್ ಪ್ಲೇಯರ್</string>
+    <string name="music_notification_channel">Zadflix ಮ್ಯೂಸಿಕ್ ಪ್ಲೇಯರ್</string>
     <string name="music_notification_channel_description">ಹಾಡುಗಳ ಪ್ಲೇಬ್ಯಾಕ್ ನಿಯಂತ್ರಣಕ್ಕೆ ಬಳಸಲಾಗುತ್ತದೆ</string>
     <string name="downloading">ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</string>
     <string name="media_service_car_section_artists">ಕಲಾವಿದರು</string>
@@ -52,7 +52,7 @@
     <string name="bluetooth_permission_title">ಬ್ಲೂಟೂತ್ ಬಳಸಲು ಅನುಮತಿ?</string>
     <string name="connection_error_unsupported_version_or_product">ಬೆಂಬಲವಿಲ್ಲದ ಆವೃತ್ತಿ ಅಥವಾ ಉತ್ಪನ್ನ</string>
     <string name="button_use_different_server">ಬೇರೆ ಸರ್ವರ್ ಬಳಸಿ</string>
-    <string name="bluetooth_permission_message">ವೈರ್ಲೆಸ್ ಹೆಡ್ಫೋನ್ಗಳು ಅಥವಾ ಸ್ಪೀಕರ್ಗಳು ಡಿಸ್ಕನೆಕ್ಟ್ ಆದಾಗ ಪತ್ತೆಹಚ್ಚಲು, ಆಪ್‌ಗೆ ಬ್ಲೂಟೂತ್ ಬಳಕೆಯ ಅಗತ್ಯವಿದೆ. ಆಂಡ್ರಾಯ್ಡ್‌ನಲ್ಲಿ, ಈ ಅನುಮತಿಯನ್ನು ಹತ್ತಿರದ ಸಾಧನಗಳನ್ನು ಬಳಸುವಿಕೆ ಎಂದು ವಿವರಿಸಲಾಗಿದೆ, ಮತ್ತು ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಅಂದಾಜು ಮಾಡಲು ಬಳಸಬಹುದು ಎಂದು ಎಚ್ಚರಿಸುತ್ತದೆ. ಆದರೆ, ಜೆಲ್ಲಿ‌ಫಿನ್ ಆಪ್‌ ಈ ಅನುಮತಿಯನ್ನು ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪತ್ತೆಹಚ್ಚಲು ಎಂದಿಗೂ ಬಳಸುವುದಿಲ್ಲ.</string>
+    <string name="bluetooth_permission_message">ವೈರ್ಲೆಸ್ ಹೆಡ್ಫೋನ್ಗಳು ಅಥವಾ ಸ್ಪೀಕರ್ಗಳು ಡಿಸ್ಕನೆಕ್ಟ್ ಆದಾಗ ಪತ್ತೆಹಚ್ಚಲು, ಆಪ್‌ಗೆ ಬ್ಲೂಟೂತ್ ಬಳಕೆಯ ಅಗತ್ಯವಿದೆ. ಆಂಡ್ರಾಯ್ಡ್‌ನಲ್ಲಿ, ಈ ಅನುಮತಿಯನ್ನು ಹತ್ತಿರದ ಸಾಧನಗಳನ್ನು ಬಳಸುವಿಕೆ ಎಂದು ವಿವರಿಸಲಾಗಿದೆ, ಮತ್ತು ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಅಂದಾಜು ಮಾಡಲು ಬಳಸಬಹುದು ಎಂದು ಎಚ್ಚರಿಸುತ್ತದೆ. ಆದರೆ, Zadflix ಆಪ್‌ ಈ ಅನುಮತಿಯನ್ನು ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪತ್ತೆಹಚ್ಚಲು ಎಂದಿಗೂ ಬಳಸುವುದಿಲ್ಲ.</string>
     <string name="bluetooth_permission_granted">ಬ್ಲೂಟೂತ್ ಬಳಸಲು ಅನುಮತಿ ನೀಡಲಾಗಿದೆ</string>
     <string name="mobile_data">ಮೊಬೈಲ್ ಡೇಟಾ</string>
     <string name="download_no_storage_permission">ಸ್ಟೋರೇಜ್ ಅನುಮತಿಗಳಿಲ್ಲದೆ ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</string>

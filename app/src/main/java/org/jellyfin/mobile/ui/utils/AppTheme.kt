@@ -14,16 +14,18 @@ fun AppTheme(content: @Composable () -> Unit) {
     val colors = remember {
         @Suppress("MagicNumber")
         darkColors(
-            primary = Color(0xFF00A4DC),
-            primaryVariant = Color(0xFF202020),
-            background = Color(0xFF101010),
-            surface = Color(0xFF363636),
-            error = Color(0xFFCF6679),
+            primary = Color(0xFFE50914),
+            primaryVariant = Color(0xFFB20710),
+            secondary = Color(0xFFE50914),
+            secondaryVariant = Color(0xFFB20710),
+            background = Color(0xFF0B0B0B),
+            surface = Color(0xFF181818),
+            error = Color(0xFFFFB4AB),
             onPrimary = Color.White,
             onSecondary = Color.White,
             onBackground = Color.White,
             onSurface = Color.White,
-            onError = Color.White,
+            onError = Color(0xFF690005),
         )
     }
     MaterialTheme(

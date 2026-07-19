@@ -11,7 +11,7 @@
     <string name="host_input_hint">Servidor</string>
     <string name="connect_to_server_title">Conectar al servidor</string>
     <string name="pref_category_music_player">Reproductor de música</string>
-    <string name="activity_name_settings">Configuración de Jellyfin</string>
+    <string name="activity_name_settings">Configuración de Zadflix</string>
     <string name="playback_info_and_x_more">...y %d más</string>
     <string name="playback_info_audio_streams">Flujos de audio</string>
     <string name="playback_info_video_streams">Transmisiones de vídeo</string>
@@ -56,7 +56,7 @@
     <string name="external_player_mpv">Reproductor MPV</string>
     <string name="external_player_app">Reproductor de video externo</string>
     <string name="music_notification_channel_description">Se utiliza para controlar la reproducción de música</string>
-    <string name="music_notification_channel">Reproductor de música de Jellyfin</string>
+    <string name="music_notification_channel">Reproductor de música de Zadflix</string>
     <string name="media_service_car_item_no_title">Sin título</string>
     <string name="media_service_car_section_genres">Géneros</string>
     <string name="media_service_car_section_songs">Canciones</string>
@@ -106,7 +106,7 @@
     <string name="pref_subtitle_style_summary">Puedes cambiar el estilo de subtítulos en las configuraciones de Android</string>
     <string name="bluetooth_permission_title">¿Permitir acceso a Bluetooth\?</string>
     <string name="bluetooth_permission_granted">El permiso Bluetooth fue concedido</string>
-    <string name="bluetooth_permission_message">Para detectar la desconexión de audífonos y bocinas, la aplicación requiere acceso al Bluetooth. En Android, este permiso es descrito como acceso a dispositivos cercanos, y advierte que los dispositivos Bluetooth pueden ser usados para inferir la ubicación actual. Sin embargo, Jellifyn nunca usará el permiso para detectar su ubicación.</string>
+    <string name="bluetooth_permission_message">Para detectar la desconexión de audífonos y bocinas, la aplicación requiere acceso al Bluetooth. En Android, este permiso es descrito como acceso a dispositivos cercanos, y advierte que los dispositivos Bluetooth pueden ser usados para inferir la ubicación actual. Sin embargo, Zadflix nunca usará el permiso para detectar su ubicación.</string>
     <string name="bluetooth_permission_continue">Continuar</string>
     <string name="mobile_data_and_roaming_summary">El contenido se descargará sobre WIFI, redes móviles y en itinerancia.</string>
     <string name="wifi_only_summary">El contenido se descargará solo sobre WIFI.</string>

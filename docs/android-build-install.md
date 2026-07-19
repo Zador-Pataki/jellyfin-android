@@ -1,6 +1,8 @@
-# Build and install the Android client
+# Build and install Zadflix for Android
 
-The repository builds a `libreDebug` APK by default. This variant excludes proprietary Google Cast dependencies, uses the debug application ID `com.zadorpataki.personalmedia.debug`, and can coexist with the official Jellyfin app.
+The repository builds a `libreDebug` Zadflix APK by default. This variant excludes proprietary Google Cast dependencies, uses the debug application ID `com.zadorpataki.personalmedia.debug`, and can coexist with the official Jellyfin app.
+
+The client uses an original generated red-ribbon Z launcher icon and a dark red native/WebView theme. The source icon is stored at `app/src/main/res/drawable-nodpi/zadflix_icon.png`; density-specific launcher assets are generated from that source.
 
 The build script checks prerequisites, runs only repository Gradle tasks, and prints the absolute APK path and SHA-256 checksum. It does not install the app, create a release key, or embed release-signing credentials.
 
@@ -103,6 +105,8 @@ The numeric fallback is `http://100.123.144.13:8096`. Both addresses were verifi
 The phone was connected over cellular through Tailscale and reached Jellyfin at `100.123.144.13:8096`. The synthetic eight-second movie played in the native player, and Jellyfin recorded a completed 8,000 ms playback session from the phone's private Tailscale address.
 
 During playback, the disposable streaming cache contained two files totaling about 2.6 MiB. After force-stopping and restarting the app, it contained no media payloads (only up to 4 KiB of cache bookkeeping), while the server selection and authenticated session remained available. The app-specific Android battery-optimization exemption was also enabled so playback can continue with the screen off.
+
+The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix Dev` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
 
 ## Bring in upstream Jellyfin updates
 

@@ -3,7 +3,7 @@
     <string name="pref_category_video_player">வீடியோ பிளேயர்</string>
     <string name="pref_music_notification_always_dismissible_title">நிராகரிக்கக்கூடிய பிளேயர் அறிவிப்பு</string>
     <string name="pref_category_music_player">இசைப்பான்</string>
-    <string name="activity_name_settings">ஜெல்லிஃபின் அமைப்புகள்</string>
+    <string name="activity_name_settings">Zadflix அமைப்புகள்</string>
     <string name="menu_item_none">எதுவுமில்லை</string>
     <string name="downloading">பதிவிறக்குகிறது</string>
     <string name="mobile_data_and_roaming">மொபைல் தரவு &amp; ரோமிங்</string>
@@ -56,7 +56,7 @@
     <string name="external_player_mpv">எம்.பி.வி பிளேயர்</string>
     <string name="external_player_app">வெளிப்புற பிளேயர் பயன்பாடு</string>
     <string name="music_notification_channel_description">இசை பின்னணி கட்டுப்பாடுகளுக்கு பயன்படுத்தப்படுகிறது</string>
-    <string name="music_notification_channel">ஜெல்லிஃபின் மியூசிக் பிளேயர்</string>
+    <string name="music_notification_channel">Zadflix மியூசிக் பிளேயர்</string>
     <string name="media_service_car_item_no_title">தலைப்பு இல்லை</string>
     <string name="media_service_car_section_genres">வகைகள்</string>
     <string name="media_service_car_section_songs">பாடல்கள்</string>
@@ -104,7 +104,7 @@
     <string name="menu_item_software_decoding">மென்பொருள் டிகோடிங்</string>
     <string name="pref_exoplayer_direct_play_ass">நேரடி இயக்கத்தில் SSA/ASS வசனங்களை அனுமதிக்கவும்</string>
     <string name="bluetooth_permission_title">புளூடூத் அணுகலை அனுமதிக்கவா\?</string>
-    <string name="bluetooth_permission_message">வயர்லெஸ் ஹெட்ஃபோன்கள் அல்லது ஸ்பீக்கர்கள் எப்போது துண்டிக்கப்படுகின்றன என்பதைக் கண்டறிய, பயன்பாட்டிற்கு புளூடூத் அணுகல் தேவை. Android இல், இந்த அனுமதி அருகிலுள்ள சாதனங்களுக்கான அணுகலாக விவரிக்கப்படுகிறது, மேலும் தற்போதைய இருப்பிடத்தை ஊகிக்க புளூடூத் சாதனங்களைப் பயன்படுத்தலாம் என்று எச்சரிக்கிறது. இருப்பினும், உங்கள் இருப்பிடத்தைக் கண்டறிய Jellyfin ஆப்ஸ் இந்த அனுமதியைப் பயன்படுத்தாது.</string>
+    <string name="bluetooth_permission_message">வயர்லெஸ் ஹெட்ஃபோன்கள் அல்லது ஸ்பீக்கர்கள் எப்போது துண்டிக்கப்படுகின்றன என்பதைக் கண்டறிய, பயன்பாட்டிற்கு புளூடூத் அணுகல் தேவை. Android இல், இந்த அனுமதி அருகிலுள்ள சாதனங்களுக்கான அணுகலாக விவரிக்கப்படுகிறது, மேலும் தற்போதைய இருப்பிடத்தை ஊகிக்க புளூடூத் சாதனங்களைப் பயன்படுத்தலாம் என்று எச்சரிக்கிறது. இருப்பினும், உங்கள் இருப்பிடத்தைக் கண்டறிய Zadflix ஆப்ஸ் இந்த அனுமதியைப் பயன்படுத்தாது.</string>
     <string name="bluetooth_permission_continue">தொடரவும்</string>
     <string name="bluetooth_permission_granted">புளூடூத் அனுமதி வழங்கப்பட்டது</string>
     <string name="mobile_data_and_roaming_summary">வைஃபை, மொபைல் மற்றும் ரோமிங் நெட்வொர்க்குகள் மூலம் மீடியா பதிவிறக்கப்படும்.</string>

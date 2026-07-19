@@ -1,0 +1,113 @@
+:root {
+    --theme-primary-color: #e50914;
+    --theme-primary-color-lightened: #ff3340;
+    --theme-primary-color-darkened: #b20710;
+    --theme-accent-text-color: #fff;
+    --jf-palette-primary-main: #e50914;
+    --jf-palette-primary-light: #ff3340;
+    --jf-palette-primary-dark: #b20710;
+    --jf-palette-primary-contrastText: #fff;
+}
+
+html,
+body,
+.backgroundContainer,
+.dialog,
+.mainDrawer,
+.skinHeader {
+    background-color: #0b0b0b !important;
+}
+
+.pageTitleWithDefaultLogo {
+    background-image: url('/native/zadflix-icon.png') !important;
+    background-position: left center !important;
+    background-size: contain !important;
+    overflow: visible;
+    position: relative;
+}
+
+.pageTitleWithDefaultLogo::after {
+    color: #fff;
+    content: 'Zadflix';
+    font-size: 1.2em;
+    font-weight: 700;
+    left: 1.35em;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.defaultCardBackground {
+    background: linear-gradient(135deg, #e50914, #6d0308) !important;
+}
+
+.defaultCardBackground1 {
+    background: linear-gradient(135deg, #b20710, #3d0205) !important;
+}
+
+.defaultCardBackground2 {
+    background: linear-gradient(135deg, #f6121d, #8b0008) !important;
+}
+
+.defaultCardBackground .cardImageIcon {
+    color: #fff !important;
+}
+
+.button-submit,
+.fab,
+.navMenuOption-selected,
+.selectionCommandsPanel,
+.listItemIcon:not(.listItemIcon-transparent),
+.detailRibbon {
+    background-color: #e50914 !important;
+    color: #fff !important;
+}
+
+.button-accent,
+.button-accent-flat,
+.emby-tab-button-active,
+.playstatebutton-icon-played,
+.ratingbutton-icon-withrating,
+.selectLabelFocused,
+.inputLabelFocused,
+.textareaLabelFocused {
+    color: #e50914 !important;
+}
+
+.emby-tab-button-active,
+.emby-input:focus,
+.emby-textarea:focus,
+.emby-select-withcolor:focus {
+    border-color: #e50914 !important;
+}
+
+.mdl-slider-background-lower,
+.mdl-slider::-webkit-slider-thumb,
+.mdl-slider::-moz-range-thumb,
+.mdl-slider::-ms-thumb,
+.sliderMarker.watched,
+.playbackProgress > div,
+.iconOsdProgressInner,
+progress::-moz-progress-bar,
+progress::-webkit-progress-value,
+progress[aria-valuenow]::before {
+    background-color: #e50914 !important;
+}
+
+.mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__trackContainer > .mdl-switch__thumb,
+.mdl-checkbox__input:checked + .mdl-checkbox__label + .mdl-checkbox__box-outline,
+.mdl-radio__inner-circle,
+.mdl-radio__focus-circle,
+.mdl-spinner__layer-1,
+.mdl-spinner__layer-2,
+.mdl-spinner__layer-3,
+.mdl-spinner__layer-4 {
+    border-color: #e50914 !important;
+    background-color: #e50914 !important;
+}
+
+a,
+.button-link {
+    color: #ff3340;
+}
