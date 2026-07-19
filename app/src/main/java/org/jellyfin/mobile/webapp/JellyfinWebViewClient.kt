@@ -41,8 +41,10 @@ abstract class JellyfinWebViewClient(
         val url = request.url
         val path = url.path?.lowercase(Locale.ROOT) ?: return null
         return when {
+            path.contains("/icon-transparent.") && path.endsWith(".png") -> {
+                assetsPathHandler.inject("native/zadflix-icon.png")
+            }
             path.matches(Constants.MAIN_BUNDLE_PATH_REGEX) && "deferred" !in url.query.orEmpty() -> {
-                onConnectedToWebapp()
                 assetsPathHandler.inject("native/injectionScript.js")
             }
             // Load injected scripts from application assets

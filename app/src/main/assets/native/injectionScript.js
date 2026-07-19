@@ -1,4 +1,35 @@
 (() => {
+    const startupStyle = document.createElement('style');
+    startupStyle.id = 'zadflix-startup-theme';
+    startupStyle.textContent = `
+        .splashLogo {
+            background-image: url('/native/zadflix-icon.png') !important;
+        }
+    `;
+    document.head.appendChild(startupStyle);
+
+    let startupReady = false;
+    const showWebapp = () => {
+        if (startupReady) return;
+        startupReady = true;
+        window.ZadflixStartup?.ready();
+    };
+    const startupLogo = new Image();
+    startupLogo.addEventListener('load', showWebapp, { once: true });
+    startupLogo.addEventListener('error', () => {
+        startupStyle.textContent = '.splashLogo { display: none !important; }';
+        showWebapp();
+    }, { once: true });
+    startupLogo.src = '/native/zadflix-icon.png';
+    if (startupLogo.complete) {
+        if (startupLogo.naturalWidth > 0) {
+            showWebapp();
+        } else {
+            startupStyle.textContent = '.splashLogo { display: none !important; }';
+            showWebapp();
+        }
+    }
+
     const themeStylesheet = document.createElement('link');
     themeStylesheet.id = 'zadflix-theme';
     themeStylesheet.rel = 'stylesheet';

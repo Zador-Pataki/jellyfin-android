@@ -30,6 +30,7 @@ import org.jellyfin.mobile.bridge.ExternalPlayer
 import org.jellyfin.mobile.bridge.MediaSegments
 import org.jellyfin.mobile.bridge.NativeInterface
 import org.jellyfin.mobile.bridge.NativePlayer
+import org.jellyfin.mobile.bridge.ZadflixStartupInterface
 import org.jellyfin.mobile.data.entity.ServerEntity
 import org.jellyfin.mobile.databinding.FragmentWebviewBinding
 import org.jellyfin.mobile.setup.ConnectFragment
@@ -186,6 +187,12 @@ class WebViewFragment : Fragment(), BackPressInterceptor, JellyfinWebChromeClien
         webChromeClient = JellyfinWebChromeClient(this@WebViewFragment)
         settings.applyDefault()
         addJavascriptInterface(NativeInterface(requireContext()), "NativeInterface")
+        addJavascriptInterface(
+            ZadflixStartupInterface {
+                post { jellyfinWebViewClient.onConnectedToWebapp() }
+            },
+            "ZadflixStartup",
+        )
         addJavascriptInterface(nativePlayer, "NativePlayer")
         addJavascriptInterface(externalPlayer, "ExternalPlayer")
         addJavascriptInterface(mediaSegments, "MediaSegments")
