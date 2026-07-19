@@ -108,6 +108,8 @@ During playback, the disposable streaming cache contained two files totaling abo
 
 The final Zadflix rebrand was installed on the same device and visually verified in both Android App info and the live Home screen. Android shows the generated red Z icon and `Zadflix` label; the WebView header shows the Z plus `Zadflix`, navigation and placeholders use the red palette, and real poster art remains untinted. Playback from `/Users/zadorpataki/Zadflix/Moviesa` completed successfully, and Jellyfin recorded the client as `Zadflix for Android`.
 
+Administrator accounts also get a red circular-arrow button in the header immediately before Search. It starts Jellyfin's authenticated `RefreshLibrary` scheduled task, shows scan progress, and returns to Home when the scan completes. The button is hidden from non-administrator accounts, and the server independently enforces the same elevated permission. This is the manual refresh path when real-time library monitoring is disabled.
+
 ## Bring in upstream Jellyfin updates
 
 Keep `origin` pointed at the personal fork and `upstream` pointed at `https://github.com/jellyfin/jellyfin-android.git`. Update without rewriting the personal branch:
