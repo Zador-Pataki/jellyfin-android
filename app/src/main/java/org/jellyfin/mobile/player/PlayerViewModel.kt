@@ -13,7 +13,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
-import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
@@ -22,8 +21,6 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.DefaultAnalyticsCollector
 import androidx.media3.exoplayer.mediacodec.MediaCodecDecoderException
-import androidx.media3.exoplayer.mediacodec.MediaCodecInfo
-import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
@@ -36,7 +33,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.mobile.BuildConfig
 import org.jellyfin.mobile.R
-import org.jellyfin.mobile.app.AppPreferences
 import org.jellyfin.mobile.app.PLAYER_EVENT_CHANNEL
 import org.jellyfin.mobile.player.interaction.PlayerEvent
 import org.jellyfin.mobile.player.interaction.PlayerLifecycleObserver
@@ -48,7 +44,6 @@ import org.jellyfin.mobile.player.network.PlaybackNetworkPolicy
 import org.jellyfin.mobile.player.queue.QueueManager
 import org.jellyfin.mobile.player.source.JellyfinMediaSource
 import org.jellyfin.mobile.player.source.RemoteJellyfinMediaSource
-import org.jellyfin.mobile.player.ui.DecoderType
 import org.jellyfin.mobile.player.ui.DisplayPreferences
 import org.jellyfin.mobile.player.ui.PlayState
 import org.jellyfin.mobile.player.ui.playermenuhelper.PlayerMenuHelper
@@ -103,7 +98,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     private val hlsSegmentApi: HlsSegmentApi = apiClient.hlsSegmentApi
     private val userApi: UserApi = apiClient.userApi
 
-    private val appPreferences: AppPreferences by inject()
     private val playbackNetworkPolicy: PlaybackNetworkPolicy by inject()
     private val lifecycleObserver = PlayerLifecycleObserver(this)
     private val audioManager: AudioManager by lazy { getApplication<Application>().getSystemService()!! }
@@ -120,10 +114,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     // ExoPlayer
     private val _player = MutableLiveData<ExoPlayer?>()
     private val _playerState = MutableLiveData<Int>()
-    private val _decoderType = MutableLiveData<DecoderType>()
     val player: LiveData<ExoPlayer?> get() = _player
     val playerState: LiveData<Int> get() = _playerState
-    val decoderType: LiveData<DecoderType> get() = _decoderType
 
     // Player Menus
     private var playerMenuHelper: PlayerMenuHelper? = null
@@ -248,32 +240,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
                 else -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
             }
             setExtensionRendererMode(rendererMode)
-            setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
-                val decoderInfoList = MediaCodecSelector.DEFAULT.getDecoderInfos(
-                    mimeType,
-                    requiresSecureDecoder,
-                    requiresTunnelingDecoder,
-                )
-                // Allow decoder selection only for video track
-                if (!MimeTypes.isVideo(mimeType)) {
-                    return@setMediaCodecSelector decoderInfoList
-                }
-                val filteredDecoderList = when (decoderType.value) {
-                    DecoderType.HARDWARE -> decoderInfoList.filter(MediaCodecInfo::hardwareAccelerated)
-                    DecoderType.SOFTWARE -> decoderInfoList.filterNot(MediaCodecInfo::hardwareAccelerated)
-                    else -> decoderInfoList
-                }
-                // Update the decoderType based on the first decoder selected
-                filteredDecoderList.firstOrNull()?.let { decoder ->
-                    val decoderType = when {
-                        decoder.hardwareAccelerated -> DecoderType.HARDWARE
-                        else -> DecoderType.SOFTWARE
-                    }
-                    _decoderType.postValue(decoderType)
-                }
-
-                filteredDecoderList
-            }
         }
         _player.value = ExoPlayer.Builder(getApplication(), renderersFactory, get()).apply {
             setUsePlatformDiagnostics(false)
@@ -362,25 +328,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     private fun stopSkipMediaSegmentUpdates() {
         skipMediaSegmentUpdateJob?.cancel()
-    }
-
-    /**
-     * Updates the decoder of the [Player]. This will destroy the current player and
-     * recreate the player with the selected decoder type
-     */
-    fun updateDecoderType(type: DecoderType) {
-        _decoderType.postValue(type)
-        analyticsCollector.release()
-        val playedTime = (playerOrNull?.currentPosition ?: 0L).milliseconds
-        // Stop and release the player without ending playback
-        playerOrNull?.run {
-            removeListener(this@PlayerViewModel)
-            release()
-        }
-        analyticsCollector = buildAnalyticsCollector()
-        setupPlayer()
-        queueManager.getCurrentMediaSourceOrNull()?.startTime = playedTime
-        queueManager.tryRestartPlayback()
     }
 
     private suspend fun Player.reportPlaybackStart(mediaSource: RemoteJellyfinMediaSource) {
